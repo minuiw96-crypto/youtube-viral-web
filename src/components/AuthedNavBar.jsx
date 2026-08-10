@@ -14,7 +14,7 @@ export default function AuthedNavBar() {
   return (
     <header className="app-nav">
       <div className="container app-nav-inner">
-        <Logo linkTo="/home" className="app-nav-logo" />
+        <Logo linkTo="/" className="app-nav-logo" />
         <div className="nav-actions">
           <ThemeToggle />
           <button type="button" className="btn btn-outline btn-sm" onClick={handleLogout}>

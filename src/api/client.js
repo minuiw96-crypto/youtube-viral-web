@@ -6,6 +6,7 @@ const ERROR_MESSAGES = {
   INVALID_EMAIL: '올바른 이메일 형식이 아닙니다.',
   INVALID_CREDENTIALS: '이메일 또는 비밀번호가 올바르지 않습니다.',
   ACCOUNT_DISABLED: '비활성화된 계정입니다.',
+  ADMIN_REQUIRED: '관리자 권한이 필요합니다.',
 }
 
 export class ApiError extends Error {
@@ -69,6 +70,10 @@ export function getChannelSummary(channelId) {
 export function getChannelVideos(channelId) {
   const query = channelId ? `?channel_id=${encodeURIComponent(channelId)}` : ''
   return apiRequest(`/api/channel/videos${query}`)
+}
+
+export function getAdminOverview() {
+  return apiRequest('/api/dashboard/admin-overview')
 }
 
 export function askQuestion({ question, channelId, videoId, contextVideoId }) {

@@ -60,7 +60,7 @@ npm run lint      # ESLint (flat config, react-hooks/react-refresh 플러그인 
 | GET | `/api/auth/me` | 필요 | 현재 로그인 유저 정보 반환 |
 | GET | `/api/channel/summary?channel_id=` | 필요 | 일반 유저는 자기 채널로 자동 스코프, 관리자는 `channel_id` 필수. 구독자/조회수/성장률/참여도 + `recent_videos`(상위 8개) |
 | GET | `/api/channel/videos?channel_id=` | 필요 | 채널의 영상별 `viral_score`, `performance_multiplier`, `rank`, `label_score` 등 |
-| GET | `/api/dashboard/admin-overview` | 필요 (관리자 전용) | 전체 통계, 카테고리, 파이프라인 상태, 유저 목록. 비관리자는 `ADMIN_REQUIRED`(403) |
+| GET | `/api/dashboard/admin-overview` | 필요 (관리자 전용) | 전체 통계, 카테고리, 파이프라인 상태, 유저 목록. 비관리자는 `ADMIN_REQUIRED`(403). **프론트엔드의 "전체 채널 비교 TOP10 영상 랭킹"(`HomePage.jsx`)이 이 엔드포인트를 사용 중인데, 응답에 영상 목록이 정확히 어떤 키(`videos`/`top_videos`/`all_videos`/`recent_videos` 등)로 오는지, `category`/`channel_thumbnail_url`/`channel_title`/`subscriber_count`/`avg_view_count` 같은 필드가 실제로 존재하는지 아직 확인 못함 — 관리자 계정으로 실제 로그인해서 응답을 봐야 필드명을 확정할 수 있음.** |
 | POST | `/api/chat` | 필요 | RAG 질의응답. body `{question, channel_id?, video_id?, context_video_id?}` (관리자는 `channel_id` 필수, 일반 유저는 자기 채널로 자동 스코프). 응답의 `selected_video_id`를 다음 요청의 `context_video_id`로 넘기면 "이 영상", "그 영상" 같은 follow-up 질문을 지원. `question`은 최대 8000자 |
 | POST | `/api/rag/index` | 필요 | 1회성 지식베이스 인덱싱. **Azure OpenAI 임베딩 비용 발생 — 실행 전 반드시 사용자 승인 필요.** 관리자용 시딩 호출 |
 
