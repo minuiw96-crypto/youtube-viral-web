@@ -1013,7 +1013,7 @@ img {
   right: 24px;
   width: 58px;
   height: 58px;
-  border-radius: var(--radius-lg);
+  border-radius: 50%;
   background: var(--accent);
   color: var(--accent-contrast);
   border: none;
