@@ -31,12 +31,16 @@ export default function HomePage() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [updatedAt, setUpdatedAt] = useState(null)
 
   useEffect(() => {
     let cancelled = false
     getVideoRanking()
       .then((data) => {
-        if (!cancelled) setVideos(data.video_ranking || [])
+        if (!cancelled) {
+          setVideos(data.video_ranking || [])
+          setUpdatedAt(new Date())
+        }
       })
       .catch((err) => {
         if (!cancelled) setError(err.message || '영상 데이터를 불러오지 못했습니다.')
@@ -71,6 +75,20 @@ export default function HomePage() {
       .slice(0, 10)
   }, [videos, search])
 
+  const stats = useMemo(() => {
+    if (!videos || videos.length === 0) return null
+    const channelIds = new Set(videos.map((v) => v.channel_id || v.channel_title).filter(Boolean))
+    const categoryIds = new Set(videos.map((v) => v.category).filter(Boolean))
+    const scores = videos.map((v) => v.viral_score).filter((s) => typeof s === 'number')
+    const avgScore = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null
+    return {
+      totalVideos: videos.length,
+      totalChannels: channelIds.size,
+      totalCategories: categoryIds.size,
+      avgScore,
+    }
+  }, [videos])
+
   return (
     <div className="dashboard-shell">
       <AuthedNavBar />
@@ -84,6 +102,41 @@ export default function HomePage() {
 
         {!loading && !error && videos && videos.length > 0 && (
           <>
+            <div className="page-header">
+              <div>
+                <h1>영상 랭킹 대시보드</h1>
+                <p className="page-subtitle">전체 채널 기준 바이럴 스코어 순위</p>
+              </div>
+              {updatedAt && (
+                <span className="updated-at">
+                  업데이트 {updatedAt.toLocaleString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
+            </div>
+
+            {stats && (
+              <div className="kpi-grid">
+                <div className="kpi-card">
+                  <span className="kpi-label">추적 영상</span>
+                  <span className="kpi-value">{stats.totalVideos}건</span>
+                </div>
+                <div className="kpi-card">
+                  <span className="kpi-label">추적 채널</span>
+                  <span className="kpi-value">{stats.totalChannels}개</span>
+                </div>
+                <div className="kpi-card">
+                  <span className="kpi-label">카테고리</span>
+                  <span className="kpi-value">{stats.totalCategories}개</span>
+                </div>
+                <div className="kpi-card">
+                  <span className="kpi-label">평균 스코어</span>
+                  <span className="kpi-value">
+                    {stats.avgScore !== null ? stats.avgScore.toFixed(1) : '-'}점
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className="rank-search-bar">
               <div className="rank-search-input">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -109,7 +162,9 @@ export default function HomePage() {
               <div className="rank-table-head">
                 <div className="rank-table-title">
                   <h2>TOP 10 영상 스코어</h2>
-                  <span className="rank-table-caption">전체 채널 기준 바이럴 스코어 순위</span>
+                  <span className="rank-table-caption">
+                    {search.trim() ? `검색된 ${top10.length}개 영상 중 스코어 상위` : '전체 채널 기준 바이럴 스코어 순위'}
+                  </span>
                 </div>
               </div>
               {top10.length === 0 ? (

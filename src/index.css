@@ -530,11 +530,34 @@ img {
   padding-bottom: 80px;
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 28px;
 }
 .dashboard-status {
   color: var(--text-dim);
   font-size: 15px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.page-header h1 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.page-subtitle {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.updated-at {
+  font-size: 13px;
+  color: var(--text-dim);
+  white-space: nowrap;
 }
 
 .kpi-grid {
@@ -546,10 +569,11 @@ img {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 22px 24px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-shadow: var(--shadow);
 }
 .kpi-label {
   font-size: 13px;
@@ -560,6 +584,7 @@ img {
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.01em;
+  color: var(--accent);
 }
 
 .rank-search-bar {
@@ -617,6 +642,7 @@ img {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: var(--shadow);
 }
 .rank-table-head {
   padding: 20px 24px;
@@ -703,8 +729,11 @@ img {
 .rank-table tbody tr:last-child td {
   border-bottom: none;
 }
-.rank-table tbody tr:hover {
+.rank-table tbody tr:nth-child(even) {
   background: var(--bg-soft);
+}
+.rank-table tbody tr:hover {
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-soft));
 }
 .rank-table .col-rank { width: 7%; }
 .rank-table .col-video { width: 32%; }
