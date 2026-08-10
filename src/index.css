@@ -579,53 +579,80 @@ img {
   letter-spacing: -0.01em;
 }
 
-.rank-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.rank-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+.rank-table-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 14px 20px;
-  border-left: 4px solid var(--border);
+  overflow: hidden;
 }
-.rank-item.gold {
-  border-left-color: #d4af37;
+.rank-table-head {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
 }
-.rank-item.silver {
-  border-left-color: #9ca3af;
+.rank-table-head h2 {
+  font-size: 18px;
+  font-weight: 800;
 }
-.rank-item.bronze {
-  border-left-color: #b06a3a;
+.rank-table-scroll {
+  overflow-x: auto;
 }
-.rank-number {
+.rank-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+}
+.rank-table thead th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 12px 24px;
+  background: var(--bg-soft);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.rank-table tbody td {
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  font-size: 14px;
+}
+.rank-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.rank-table tbody tr:hover {
+  background: var(--bg-soft);
+}
+.rank-medal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 30px;
   height: 30px;
   border-radius: 50%;
   background: var(--bg-soft);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-weight: 800;
   font-size: 14px;
-  flex-shrink: 0;
 }
-.rank-item.gold .rank-number {
+.rank-medal.gold {
   background: #d4af37;
   color: #1a1a1a;
 }
-.rank-item.silver .rank-number {
+.rank-medal.silver {
   background: #9ca3af;
   color: #1a1a1a;
 }
-.rank-item.bronze .rank-number {
+.rank-medal.bronze {
   background: #b06a3a;
   color: #fff;
+}
+.rank-video-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 220px;
 }
 .rank-thumb {
   width: 64px;
@@ -635,12 +662,12 @@ img {
   flex-shrink: 0;
 }
 .rank-title {
-  flex: 1;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 320px;
 }
 
 .video-grid {
@@ -906,11 +933,5 @@ img {
   }
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .rank-item {
-    flex-wrap: wrap;
-  }
-  .rank-title {
-    white-space: normal;
   }
 }

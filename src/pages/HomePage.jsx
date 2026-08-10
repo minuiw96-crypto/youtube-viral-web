@@ -5,6 +5,10 @@ import { getChannelVideos } from '../api/client'
 
 const RANK_LABELS = ['gold', 'silver', 'bronze']
 
+function formatMultiplier(n) {
+  return typeof n === 'number' ? `×${n.toFixed(1)}` : '-'
+}
+
 export default function HomePage() {
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -44,17 +48,43 @@ export default function HomePage() {
         )}
 
         {!loading && !error && videos.length > 0 && (
-          <div className="rank-list">
-            {videos.map((video, i) => (
-              <div className={`rank-item ${RANK_LABELS[i] || ''}`} key={video.video_id || i}>
-                <span className="rank-number">{i + 1}</span>
-                {video.thumbnail_url && (
-                  <img src={video.thumbnail_url} alt="" className="rank-thumb" />
-                )}
-                <span className="rank-title">{video.title || '제목 없음'}</span>
-                <ScoreGauge score={video.viral_score} />
-              </div>
-            ))}
+          <div className="rank-table-card">
+            <div className="rank-table-head">
+              <h2>TOP 10 영상 스코어</h2>
+            </div>
+            <div className="rank-table-scroll">
+              <table className="rank-table">
+                <thead>
+                  <tr>
+                    <th>순위</th>
+                    <th>영상</th>
+                    <th>성과 배수</th>
+                    <th>스코어</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {videos.map((video, i) => (
+                    <tr key={video.video_id || i}>
+                      <td>
+                        <span className={`rank-medal ${RANK_LABELS[i] || ''}`}>{i + 1}</span>
+                      </td>
+                      <td>
+                        <div className="rank-video-cell">
+                          {video.thumbnail_url && (
+                            <img src={video.thumbnail_url} alt="" className="rank-thumb" />
+                          )}
+                          <span className="rank-title">{video.title || '제목 없음'}</span>
+                        </div>
+                      </td>
+                      <td>{formatMultiplier(video.performance_multiplier)}</td>
+                      <td>
+                        <ScoreGauge score={video.viral_score} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
