@@ -60,3 +60,15 @@ export function registerUser({ email, password, password_confirm, name, channel_
 export function getCurrentUser() {
   return apiRequest('/api/auth/me')
 }
+
+export function askQuestion({ question, channelId, videoId, contextVideoId }) {
+  return apiRequest('/api/chat', {
+    method: 'POST',
+    body: JSON.stringify({
+      question,
+      channel_id: channelId,
+      video_id: videoId,
+      context_video_id: contextVideoId,
+    }),
+  })
+}

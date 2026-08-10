@@ -105,8 +105,7 @@ export default function LandingPage() {
         <img src={heroBg} alt="" className="hero-bg" />
         <div className="hero-overlay" />
         <div className="container hero-content">
-          <span className="hero-eyebrow">YouTube Viral Success Predictor</span>
-          <h1 className="hero-title">영상이 뜨기 전에, 먼저 확인하세요</h1>
+          <h1 className="hero-title">영상이 뜨기 전에 확인하세요</h1>
           <p className="hero-subtitle">
             AI 기반 바이럴 스코어와 채널 분석으로 유튜브 크리에이터의 다음 성장을 예측하는
             인플루언서 마케팅 통합 솔루션입니다.
@@ -121,7 +120,6 @@ export default function LandingPage() {
       <section className="section" id="features">
         <div className="container">
           <div className="section-head">
-            <span className="section-eyebrow">Features</span>
             <h2 className="section-title">바이럴 마케팅을 위한 통합 솔루션</h2>
             <p className="section-desc">
               예측부터 분석, 리포팅까지 — PredicTube 하나로 끝냅니다.
@@ -143,7 +141,6 @@ export default function LandingPage() {
       <section className="section section-soft" id="pricing">
         <div className="container">
           <div className="section-head">
-            <span className="section-eyebrow">Pricing</span>
             <h2 className="section-title">우리 채널에 맞는 요금제를 선택하세요</h2>
             <p className="section-desc">
               언제든 변경 가능하며, 숨겨진 비용 없이 투명하게 운영됩니다.
