@@ -21,10 +21,11 @@
   3. 서버는 PBKDF2 해시 + HMAC 서명 토큰을 사용 (커스텀 구현이지만 구조는 표준 JWT와 동일: header.payload.signature, `exp` 포함)
 - **배포 인프라**: Cloudflare Pages + Worker(`worker/index.js`, `wrangler.jsonc`)로 배포한다. 정적 파일(`dist/`)은 Pages assets가 서빙하고, `/api/*`만 Worker가 가로채(`run_worker_first`) Azure Function으로 프록시한다(`assets.not_found_handling: single-page-application`로 SPA 라우팅도 처리). Worker가 `x-functions-key` 헤더를 서버사이드에서 주입하므로 브라우저는 Function key를 절대 보지 않는다. 프론트엔드는 항상 `/api/*` 상대경로만 호출한다.
 - **Worker 라우팅 규칙**: `/api/config` → PowerBI URL 3종 반환. `/api/predict/*` → `PREDICT_FUNCTION_BASE_URL`(별도 Azure Function App, `ytv-func-*`)로 프록시. 그 외 `/api/*` → `AZURE_FUNCTION_BASE_URL`(`ytv-rag-fnc`)로 프록시.
-- **필요한 Cloudflare Pages 환경 변수** (실제 값은 Cloudflare 대시보드에만 존재 — 이 레포에는 이름만 기록, `.dev.vars.example` 참고):
-  - `AZURE_FUNCTION_BASE_URL` (plaintext), `AZURE_FUNCTION_KEY` (secret)
-  - `PREDICT_FUNCTION_BASE_URL` (plaintext), `PREDICT_FUNCTION_KEY` (secret)
-  - `POWERBI_ADMIN_URL` / `POWERBI_HOME_URL` / `POWERBI_USER_URL` (plaintext)
+- **환경 변수**:
+  - Plaintext 값(`AZURE_FUNCTION_BASE_URL`, `PREDICT_FUNCTION_BASE_URL`)은 **`wrangler.jsonc`의 `vars` 블록에 직접 커밋되어 있다** — 시크릿이 아니라서 코드에 있어도 안전하고, `wrangler deploy`가 이 값을 기준으로 매번 Cloudflare에 동기화한다.
+  - Secret 값(`AZURE_FUNCTION_KEY`, `PREDICT_FUNCTION_KEY`)은 Cloudflare 대시보드에만 존재하고 절대 코드/레포에 넣지 않는다.
+  - `POWERBI_ADMIN_URL`/`POWERBI_HOME_URL`/`POWERBI_USER_URL`은 아직 미설정 상태 (2026-08-11 기준).
+  - **⚠️ 중요 교훈**: `wrangler.jsonc`에 `vars`로 선언 안 된 plaintext 값을 대시보드에서만 추가해두면, 다음 `wrangler deploy` 실행 시 "로컬 설정에 없다"는 이유로 **그 값이 자동으로 삭제(덮어쓰기)된다** (2026-08-11 실제로 겪음 — `AZURE_FUNCTION_BASE_URL`/`PREDICT_FUNCTION_BASE_URL`이 지워졌다가 `vars` 블록에 추가해서 복구). Secret 값은 이 방식으로 지워지지 않는 것으로 확인됨. 그래서 **plaintext 값은 항상 `wrangler.jsonc`에 커밋해두고, 대시보드에서 직접 추가/수정하지 않는다.**
 - **CORS**: 백엔드 코드상 명시적 설정 없음 — 로컬 개발 시 문제가 될 수 있어 프록시/로컬 설정이 필요할 수 있다.
 - **에셋**: 로고는 `src/assets/logo.png` (투명 배경, 검정+빨강 텍스트에 흰색 테두리 처리되어 있어 라이트/다크 배경 모두에서 사용 가능). 랜딩 히어로 배경 이미지는 `src/assets/hero-bg.png`.
 
@@ -63,7 +64,7 @@ npm run lint      # ESLint (flat config, react-hooks/react-refresh 플러그인 
 | POST | `/api/chat` | 필요 | RAG 질의응답. body `{question, channel_id?, video_id?, context_video_id?}` (관리자는 `channel_id` 필수, 일반 유저는 자기 채널로 자동 스코프). 응답의 `selected_video_id`를 다음 요청의 `context_video_id`로 넘기면 "이 영상", "그 영상" 같은 follow-up 질문을 지원. `question`은 최대 8000자 |
 | POST | `/api/rag/index` | 필요 | 1회성 지식베이스 인덱싱. **Azure OpenAI 임베딩 비용 발생 — 실행 전 반드시 사용자 승인 필요.** 관리자용 시딩 호출 |
 
-**predict 기능 (2026-08-11 확인)**: `ytv-rag-fnc`가 아니라 별도 Azure Function App(`ytv-func-*.azurewebsites.net`, 별도 base URL/key인 `PREDICT_FUNCTION_BASE_URL`/`PREDICT_FUNCTION_KEY`)에서 서빙된다. Worker는 `/api/predict/*`를 이쪽으로 프록시하도록 배선해뒀지만, 그 Function App의 실제 라우트 이름(예: `predict-from-url` 등)은 아직 확인 전이므로 실제 연동 전 재확인 필요.
+**predict 기능 (2026-08-11 확인)**: `ytv-rag-fnc`가 아니라 별도 Azure Function App(`ytv-func-*.azurewebsites.net`)에서 서빙된다. `PREDICT_FUNCTION_BASE_URL` 값 자체가 `https://ytv-func-akfebjhabaecfnet.eastus-01.azurewebsites.net/api/predict-from-url`로, 이미 라우트 이름(`predict-from-url`)까지 포함하고 있음이 확인됨(Cloudflare 대시보드 설정값 기준). Worker의 `/api/predict/*` → `PREDICT_FUNCTION_BASE_URL` 프록시 로직은 이 점을 감안해 재검토 필요(현재는 뒤에 붙는 경로를 그대로 append하는 방식이라, 프론트에서 정확히 `/api/predict`로만 호출하면 트레일링 슬래시가 붙는 등 디테일 확인 필요). 프론트엔드에 실제 예측 기능(URL 입력 폼)은 아직 만들지 않았음.
 
 ## 5. 코딩 컨벤션
 

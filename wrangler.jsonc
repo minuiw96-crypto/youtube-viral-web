@@ -8,5 +8,9 @@
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"]
+  },
+  "vars": {
+    "AZURE_FUNCTION_BASE_URL": "https://ytv-rag-fnc-h7btgwcafna3fzhz.eastus-01.azurewebsites.net/api",
+    "PREDICT_FUNCTION_BASE_URL": "https://ytv-func-akfebjhabaecfnet.eastus-01.azurewebsites.net/api/predict-from-url"
   }
 }

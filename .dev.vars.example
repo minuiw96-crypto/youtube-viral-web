@@ -1,9 +1,11 @@
-# 로컬에서 `wrangler pages dev`로 테스트할 때 사용. 실제 값은 이 파일이 아니라
-# `.dev.vars`(gitignore됨)에 넣거나 Cloudflare Pages 대시보드의 환경 변수에 설정한다.
+# 로컬에서 `wrangler dev`로 테스트할 때 사용할 시크릿 값.
+# 실제 값은 이 파일이 아니라 `.dev.vars`(gitignore됨)에 넣거나
+# Cloudflare 대시보드의 Secret에 설정한다.
+#
+# AZURE_FUNCTION_BASE_URL / PREDICT_FUNCTION_BASE_URL은 시크릿이 아니라서
+# `wrangler.jsonc`의 `vars` 블록에 이미 커밋되어 있음 — 여기서는 다루지 않는다.
 
-AZURE_FUNCTION_BASE_URL=
 AZURE_FUNCTION_KEY=
-PREDICT_FUNCTION_BASE_URL=
 PREDICT_FUNCTION_KEY=
 POWERBI_ADMIN_URL=
 POWERBI_HOME_URL=
