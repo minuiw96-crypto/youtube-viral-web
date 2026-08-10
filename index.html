@@ -1,10 +1,24 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/src/assets/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>youtube-viral-web</title>
+    <title>PredicTube — YouTube Viral Success Predictor</title>
+    <script>
+      (function () {
+        var stored = localStorage.getItem('predictube_theme');
+        var theme = stored === 'light' || stored === 'dark'
+          ? stored
+          : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+        var pin = document.createElement('style');
+        pin.textContent = theme === 'dark'
+          ? 'html{background:#0a0a0c;color:#f5f5f7}'
+          : 'html{background:#ffffff;color:#141416}';
+        document.head.appendChild(pin);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
