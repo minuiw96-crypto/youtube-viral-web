@@ -1,4 +1,4 @@
-import AuthedNavBar from '../components/AuthedNavBar'
+import Sidebar from '../components/Sidebar'
 
 const ROWS = [
   { label: '이메일 변경' },
@@ -9,17 +9,19 @@ const ROWS = [
 export default function SettingsPage() {
   return (
     <div className="dashboard-shell">
-      <AuthedNavBar />
-      <div className="container">
-        <div className="settings-list">
-          {ROWS.map((row) => (
-            <div className="settings-row" key={row.label}>
-              <span>{row.label}</span>
-              <button type="button" className="btn btn-outline btn-sm" disabled>
-                곧 지원 예정
-              </button>
-            </div>
-          ))}
+      <Sidebar />
+      <div className="dashboard-main">
+        <div className="container">
+          <div className="settings-list">
+            {ROWS.map((row) => (
+              <div className="settings-row" key={row.label}>
+                <span>{row.label}</span>
+                <button type="button" className="btn btn-outline btn-sm" disabled>
+                  곧 지원 예정
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

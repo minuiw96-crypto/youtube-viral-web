@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import AuthedNavBar from '../components/AuthedNavBar'
+import Sidebar from '../components/Sidebar'
 import ScoreGauge from '../components/ScoreGauge'
 import { predictFromUrl } from '../api/client'
 
@@ -33,7 +33,8 @@ export default function PredictPage() {
 
   return (
     <div className="dashboard-shell">
-      <AuthedNavBar />
+      <Sidebar />
+      <div className="dashboard-main">
       <div className="predict-page">
         {step === 'input' && (
           <form className="predict-card" onSubmit={handleSubmit}>
@@ -65,6 +66,7 @@ export default function PredictPage() {
             </button>
           </div>
         )}
+      </div>
       </div>
     </div>
   )

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import AuthedNavBar from '../components/AuthedNavBar'
+import Sidebar from '../components/Sidebar'
 import ScoreGauge from '../components/ScoreGauge'
 
 const EXAMPLE_VIDEO = {
@@ -31,7 +31,8 @@ export default function VideoDetailPage() {
 
   return (
     <div className="dashboard-shell">
-      <AuthedNavBar />
+      <Sidebar />
+      <div className="dashboard-main">
       <div className="container">
         <div className="video-detail-head">
           <img src={EXAMPLE_VIDEO.thumbnail_url} alt="" className="video-detail-thumb" />
@@ -91,6 +92,7 @@ export default function VideoDetailPage() {
             <p className="chart-note">예시 데이터입니다.</p>
           </div>
         )}
+      </div>
       </div>
     </div>
   )
