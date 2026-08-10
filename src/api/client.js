@@ -76,6 +76,13 @@ export function getVideoRanking() {
   return apiRequest('/api/dashboard/admin-overview')
 }
 
+export function predictFromUrl(url) {
+  return apiRequest('/api/predict', {
+    method: 'POST',
+    body: JSON.stringify({ url }),
+  })
+}
+
 export function askQuestion({ question, channelId, videoId, contextVideoId }) {
   return apiRequest('/api/chat', {
     method: 'POST',

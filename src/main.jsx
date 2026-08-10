@@ -8,6 +8,9 @@ import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import HomePage from './pages/HomePage'
+import VideoDetailPage from './pages/VideoDetailPage'
+import PredictPage from './pages/PredictPage'
+import SettingsPage from './pages/SettingsPage'
 
 const router = createBrowserRouter([
   {
@@ -21,6 +24,30 @@ const router = createBrowserRouter([
         element: (
           <RequireAuth>
             <HomePage />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: '/video-detail',
+        element: (
+          <RequireAuth>
+            <VideoDetailPage />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: '/predict',
+        element: (
+          <RequireAuth>
+            <PredictPage />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: '/settings',
+        element: (
+          <RequireAuth>
+            <SettingsPage />
           </RequireAuth>
         ),
       },

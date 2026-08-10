@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import AuthedNavBar from '../components/AuthedNavBar'
 import ScoreGauge from '../components/ScoreGauge'
 import { getVideoRanking } from '../api/client'
+import { formatCategory } from '../utils/categoryLabels'
 
 const RANK_LABELS = ['gold', 'silver', 'bronze']
 
@@ -14,6 +15,7 @@ export default function HomePage() {
   const [category, setCategory] = useState('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -30,7 +32,13 @@ export default function HomePage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [refreshKey])
+
+  function handleRefresh() {
+    setLoading(true)
+    setError('')
+    setRefreshKey((k) => k + 1)
+  }
 
   const categories = useMemo(() => {
     if (!videos) return []
@@ -60,21 +68,36 @@ export default function HomePage() {
         {!loading && !error && videos && videos.length > 0 && (
           <div className="rank-table-card">
             <div className="rank-table-head">
-              <h2>TOP 10 영상 스코어</h2>
-              {categories.length > 0 && (
-                <select
-                  className="category-select"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+              <div className="rank-table-title">
+                <h2>TOP 10 영상 스코어</h2>
+                <span className="rank-table-caption">전체 채널 기준 바이럴 스코어 순위</span>
+              </div>
+              <div className="rank-table-controls">
+                {categories.length > 0 && (
+                  <select
+                    className="category-select"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                  >
+                    <option value="all">전체 카테고리</option>
+                    {categories.map((c) => (
+                      <option key={c} value={c}>
+                        {formatCategory(c)}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={handleRefresh}
+                  aria-label="새로고침"
                 >
-                  <option value="all">전체 카테고리</option>
-                  {categories.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              )}
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 12a9 9 0 1 1-2.64-6.36M21 4v6h-6" />
+                  </svg>
+                </button>
+              </div>
             </div>
             <div className="rank-table-scroll">
               <table className="rank-table">
@@ -93,7 +116,9 @@ export default function HomePage() {
                   {top10.map((video, i) => (
                     <tr key={video.video_id || i}>
                       <td>
-                        <span className={`rank-medal ${RANK_LABELS[i] || ''}`}>{i + 1}</span>
+                        <span className={`rank-medal ${RANK_LABELS[i] || ''}`}>
+                          {i === 0 ? '👑' : i + 1}
+                        </span>
                       </td>
                       <td>
                         <div className="rank-video-cell">
@@ -103,7 +128,9 @@ export default function HomePage() {
                           <span className="rank-title">{video.title || '제목 없음'}</span>
                         </div>
                       </td>
-                      <td>{video.category || '-'}</td>
+                      <td>
+                        <span className="category-pill">{formatCategory(video.category)}</span>
+                      </td>
                       <td>
                         <div className="channel-cell">
                           {video.channel_thumbnail_url && (
