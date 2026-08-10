@@ -562,6 +562,56 @@ img {
   letter-spacing: -0.01em;
 }
 
+.rank-search-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.rank-search-input {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.rank-search-input svg {
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+.rank-search-input input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 15px;
+  color: var(--text);
+  font-family: inherit;
+}
+.rank-search-input input::placeholder {
+  color: var(--text-dim);
+}
+.rank-search-btn {
+  height: 52px;
+  padding: 0 28px;
+  border-radius: var(--radius-lg);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.rank-search-btn:hover {
+  filter: brightness(1.06);
+}
+
 .rank-table-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -639,7 +689,13 @@ img {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+}
+.channel-cell span {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 .channel-avatar {
   width: 32px;
@@ -656,7 +712,7 @@ img {
 .rank-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 560px;
+  table-layout: fixed;
 }
 .rank-table thead th {
   text-align: left;
@@ -665,16 +721,19 @@ img {
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 12px 24px;
+  padding: 12px 16px;
   background: var(--bg-soft);
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .rank-table tbody td {
-  padding: 14px 24px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
   font-size: 14px;
+  overflow: hidden;
 }
 .rank-table tbody tr:last-child td {
   border-bottom: none;
@@ -682,49 +741,51 @@ img {
 .rank-table tbody tr:hover {
   background: var(--bg-soft);
 }
-.rank-medal {
+.rank-table .col-rank { width: 7%; }
+.rank-table .col-video { width: 32%; }
+.rank-table .col-category { width: 12%; }
+.rank-table .col-channel { width: 22%; }
+.rank-table .col-subs { width: 13%; }
+.rank-table .col-score { width: 14%; }
+.rank-number {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: var(--bg-soft);
+  width: 100%;
   font-weight: 800;
   font-size: 14px;
+  color: var(--text-dim);
 }
-.rank-medal.gold {
-  background: #d4af37;
-  color: #1a1a1a;
+.rank-crown {
+  display: block;
+  width: 26px;
+  height: 22px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
 }
-.rank-medal.silver {
-  background: #9ca3af;
-  color: #1a1a1a;
-}
-.rank-medal.bronze {
-  background: #b06a3a;
-  color: #fff;
-}
+.rank-crown.gold { color: #d4af37; }
+.rank-crown.silver { color: #9298a3; }
+.rank-crown.bronze { color: #b06a3a; }
 .rank-video-cell {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 220px;
+  gap: 10px;
+  min-width: 0;
 }
 .rank-thumb {
-  width: 64px;
-  height: 40px;
+  width: 56px;
+  height: 34px;
   object-fit: cover;
   border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 .rank-title {
+  display: block;
   font-size: 14px;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 320px;
+  min-width: 0;
 }
 
 .video-grid {
@@ -778,29 +839,6 @@ img {
   font-size: 15px;
   font-weight: 800;
 }
-.grade-badge {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 999px;
-}
-.grade-verygood {
-  background: color-mix(in srgb, var(--positive, #34d399) 18%, transparent);
-  color: #1a9c6e;
-}
-.grade-good {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-}
-.grade-bad {
-  background: var(--bg-soft);
-  color: var(--text-dim);
-}
-.grade-verybad {
-  background: color-mix(in srgb, var(--accent) 20%, transparent);
-  color: var(--accent-strong);
-}
-
 .predict-cta {
   display: flex;
   align-items: center;
