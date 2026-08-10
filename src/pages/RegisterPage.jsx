@@ -34,7 +34,7 @@ export default function RegisterPage() {
       await registerUser(form)
       const { access_token } = await loginUser({ email: form.email, password: form.password })
       saveAccessToken(access_token)
-      navigate('/')
+      navigate('/home')
     } catch (err) {
       setError(err.message || '회원가입에 실패했습니다.')
     } finally {

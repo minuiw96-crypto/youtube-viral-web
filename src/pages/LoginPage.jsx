@@ -18,7 +18,7 @@ export default function LoginPage() {
     try {
       const { access_token } = await loginUser({ email, password })
       saveAccessToken(access_token)
-      navigate('/')
+      navigate('/home')
     } catch (err) {
       setError(err.message || '로그인에 실패했습니다.')
     } finally {

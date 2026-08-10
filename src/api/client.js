@@ -61,6 +61,16 @@ export function getCurrentUser() {
   return apiRequest('/api/auth/me')
 }
 
+export function getChannelSummary(channelId) {
+  const query = channelId ? `?channel_id=${encodeURIComponent(channelId)}` : ''
+  return apiRequest(`/api/channel/summary${query}`)
+}
+
+export function getChannelVideos(channelId) {
+  const query = channelId ? `?channel_id=${encodeURIComponent(channelId)}` : ''
+  return apiRequest(`/api/channel/videos${query}`)
+}
+
 export function askQuestion({ question, channelId, videoId, contextVideoId }) {
   return apiRequest('/api/chat', {
     method: 'POST',
