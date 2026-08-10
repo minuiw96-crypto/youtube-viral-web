@@ -72,7 +72,7 @@ export function getChannelVideos(channelId) {
   return apiRequest(`/api/channel/videos${query}`)
 }
 
-export function getAdminOverview() {
+export function getVideoRanking() {
   return apiRequest('/api/dashboard/admin-overview')
 }
 

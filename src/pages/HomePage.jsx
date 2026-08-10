@@ -1,18 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import AuthedNavBar from '../components/AuthedNavBar'
 import ScoreGauge from '../components/ScoreGauge'
-import { getAdminOverview } from '../api/client'
+import { getVideoRanking } from '../api/client'
 
 const RANK_LABELS = ['gold', 'silver', 'bronze']
 
 function formatNumber(n) {
   return typeof n === 'number' ? n.toLocaleString('ko-KR') : '-'
-}
-
-// admin-overview 응답에 영상 목록이 정확히 어떤 키로 오는지 아직 실제로 확인 못해서
-// 가능성 있는 키를 순서대로 시도한다. 실제 응답 확인되면 정리 필요.
-function extractVideos(data) {
-  return data.videos || data.top_videos || data.all_videos || data.recent_videos || []
 }
 
 export default function HomePage() {
@@ -23,9 +17,9 @@ export default function HomePage() {
 
   useEffect(() => {
     let cancelled = false
-    getAdminOverview()
+    getVideoRanking()
       .then((data) => {
-        if (!cancelled) setVideos(extractVideos(data))
+        if (!cancelled) setVideos(data.video_ranking || [])
       })
       .catch((err) => {
         if (!cancelled) setError(err.message || '영상 데이터를 불러오지 못했습니다.')
@@ -60,9 +54,7 @@ export default function HomePage() {
         {loading && <p className="dashboard-status">영상 데이터를 불러오는 중...</p>}
         {!loading && error && <div className="form-error dashboard-status">{error}</div>}
         {!loading && !error && videos && videos.length === 0 && (
-          <p className="dashboard-status">
-            영상 데이터를 아직 찾지 못했습니다 — 관리자 개요 응답 형식을 확인해봐야 합니다.
-          </p>
+          <p className="dashboard-status">아직 표시할 영상 데이터가 없습니다.</p>
         )}
 
         {!loading && !error && videos && videos.length > 0 && (
