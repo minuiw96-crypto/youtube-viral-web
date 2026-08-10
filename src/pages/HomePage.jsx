@@ -27,11 +27,10 @@ function RankBadge({ index }) {
 
 export default function HomePage() {
   const [videos, setVideos] = useState(null)
-  const [category, setCategory] = useState('all')
+  const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -48,22 +47,15 @@ export default function HomePage() {
     return () => {
       cancelled = true
     }
-  }, [refreshKey])
+  }, [])
 
-  function handleRefresh() {
-    setLoading(true)
-    setError('')
-    setRefreshKey((k) => k + 1)
+  function runSearch() {
+    setSearch(searchInput)
   }
-
-  const categories = useMemo(() => {
-    if (!videos) return []
-    return [...new Set(videos.map((v) => v.category).filter(Boolean))]
-  }, [videos])
 
   const top10 = useMemo(() => {
     if (!videos) return []
-    let filtered = category === 'all' ? videos : videos.filter((v) => v.category === category)
+    let filtered = videos
     const q = search.trim().toLowerCase()
     if (q) {
       filtered = filtered.filter((v) => {
@@ -77,7 +69,7 @@ export default function HomePage() {
       .slice()
       .sort((a, b) => (b.viral_score ?? -Infinity) - (a.viral_score ?? -Infinity))
       .slice(0, 10)
-  }, [videos, category, search])
+  }, [videos, search])
 
   return (
     <div className="dashboard-shell">
@@ -101,11 +93,14 @@ export default function HomePage() {
                 <input
                   type="text"
                   placeholder="채널명, 카테고리로 검색해보세요"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') runSearch()
+                  }}
                 />
               </div>
-              <button type="button" className="rank-search-btn">
+              <button type="button" className="rank-search-btn" onClick={runSearch}>
                 검색
               </button>
             </div>
@@ -115,32 +110,6 @@ export default function HomePage() {
                 <div className="rank-table-title">
                   <h2>TOP 10 영상 스코어</h2>
                   <span className="rank-table-caption">전체 채널 기준 바이럴 스코어 순위</span>
-                </div>
-                <div className="rank-table-controls">
-                  {categories.length > 0 && (
-                    <select
-                      className="category-select"
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                    >
-                      <option value="all">전체 카테고리</option>
-                      {categories.map((c) => (
-                        <option key={c} value={c}>
-                          {formatCategory(c)}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  <button
-                    type="button"
-                    className="icon-btn"
-                    onClick={handleRefresh}
-                    aria-label="새로고침"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 12a9 9 0 1 1-2.64-6.36M21 4v6h-6" />
-                    </svg>
-                  </button>
                 </div>
               </div>
               {top10.length === 0 ? (
