@@ -168,7 +168,7 @@ img {
   border-bottom: 1px solid var(--border);
 }
 .site-nav .container {
-  height: 148px;
+  height: 128px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -515,27 +515,6 @@ img {
 .auth-switch a {
   color: var(--accent);
   font-weight: 600;
-}
-
-/* Authenticated app nav */
-.app-nav {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  background: var(--nav-bg);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
-}
-.app-nav-inner {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-.app-nav-logo {
-  height: 52px;
-  width: auto;
 }
 
 /* Dashboard */
