@@ -16,8 +16,17 @@ const POWER_BI_PAGES = {
   },
 }
 
+function getPowerBiEmbedUrl(url) {
+  if (!url) return url
+
+  const embedUrl = new URL(url)
+  embedUrl.searchParams.set('pageView', 'fitToWidth')
+  return embedUrl.toString()
+}
+
 export default function AdminPage({ view = 'overview' }) {
   const page = POWER_BI_PAGES[view] || POWER_BI_PAGES.overview
+  const embedUrl = getPowerBiEmbedUrl(page.url)
 
   return (
     <div className="dashboard-shell">
@@ -26,11 +35,11 @@ export default function AdminPage({ view = 'overview' }) {
         <DashboardHeader title={page.title} />
 
         <section className="admin-powerbi-section" aria-label={`${page.title} Power BI 보고서`}>
-          {page.url ? (
+          {embedUrl ? (
             <iframe
               className="admin-powerbi-frame"
               title={`${page.title} Power BI 보고서`}
-              src={page.url}
+              src={embedUrl}
               allowFullScreen
             />
           ) : (

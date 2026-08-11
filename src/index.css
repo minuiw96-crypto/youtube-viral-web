@@ -1752,8 +1752,8 @@ img {
 
 /* admin dashboard */
 .admin-dashboard { overflow: visible; }
-.admin-powerbi-section { width: 100%; max-width: 1600px; min-height: calc(100vh - 132px); margin: 0 auto; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
-.admin-powerbi-frame { display: block; width: 100%; min-height: calc(100vh - 134px); border: 0; background: var(--surface); }
+.admin-powerbi-section { container-type: inline-size; width: 100%; max-width: 1600px; min-height: calc(100vh - 132px); margin: 0 auto; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.admin-powerbi-frame { display: block; width: 100%; height: calc(56.25cqw + 78px); min-height: calc(100vh - 134px); border: 0; background: var(--surface); }
 .admin-powerbi-empty { min-height: calc(100vh - 134px); display: grid; align-content: center; justify-items: center; gap: 10px; padding: 32px; color: var(--text-dim); text-align: center; }
 .admin-powerbi-empty strong { color: var(--text); font-size: 18px; }
 .admin-powerbi-empty p { font-size: 12px; }
