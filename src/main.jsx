@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import './index.css'
 import RootLayout from './components/RootLayout'
 import RequireAuth from './components/RequireAuth'
@@ -37,6 +37,14 @@ const router = createBrowserRouter([
       },
       {
         path: '/my-channel/performance',
+        element: <Navigate to="/lab/video-insights" replace />,
+      },
+      {
+        path: '/lab',
+        element: <Navigate to="/lab/video-insights" replace />,
+      },
+      {
+        path: '/lab/video-insights',
         element: (
           <RequireAuth>
             <MyChannelPage view="performance" />
