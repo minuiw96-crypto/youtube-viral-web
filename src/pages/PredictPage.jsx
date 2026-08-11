@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar'
 import DashboardHeader from '../components/DashboardHeader'
 import PredictionSemicircleGauge from '../components/PredictionSemicircleGauge'
 import { predictFromUrl } from '../api/client'
+import predictVideoIcon from '../assets/predict-video-icon.png'
 
 const PREDICTION_CATEGORIES = [
   { value: 'KR_MUKBANG', label: '먹방' },
@@ -108,6 +109,7 @@ export default function PredictPage() {
               <div className="predict-entry-layout">
                 <form className="predict-form-new" onSubmit={handleSubmit}>
                   <div className="predict-form-heading">
+                    <img src={predictVideoIcon} alt="" />
                     <h2>분석할 영상을 입력하세요</h2>
                   </div>
                   <div className="predict-category-field">

@@ -28,6 +28,20 @@ export default function PredictionSemicircleGauge({ score }) {
   return (
     <div className="prediction-gauge">
       <svg viewBox="0 0 220 132" role="img" aria-label={level ? `바이럴 점수 ${value.toFixed(1)}점, ${level.label}` : '바이럴 점수 없음'}>
+        <defs>
+          <linearGradient id="prediction-gauge-gradient" x1="25" y1="0" x2="195" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#4A6EA5" />
+            <stop offset="20%" stopColor="#4A6EA5" />
+            <stop offset="20%" stopColor="#4F9C8F" />
+            <stop offset="40%" stopColor="#4F9C8F" />
+            <stop offset="40%" stopColor="#C9A227" />
+            <stop offset="60%" stopColor="#C9A227" />
+            <stop offset="60%" stopColor="#E0672E" />
+            <stop offset="80%" stopColor="#E0672E" />
+            <stop offset="80%" stopColor="#FF1E3D" />
+            <stop offset="100%" stopColor="#FF1E3D" />
+          </linearGradient>
+        </defs>
         <path className="prediction-gauge-track" d="M 25 112 A 85 85 0 0 1 195 112" pathLength="100" />
         <path className="prediction-gauge-fill" d="M 25 112 A 85 85 0 0 1 195 112" pathLength="100" strokeDasharray={`${value} 100`} />
         {TICK_VALUES.map((tick) => {
