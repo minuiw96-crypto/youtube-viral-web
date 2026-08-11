@@ -172,14 +172,14 @@ img {
   border-bottom: 1px solid var(--border);
 }
 .site-nav .container {
-  height: 128px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
 }
 .nav-logo {
-  height: 112px;
+  height: 48px;
   width: auto;
 }
 .nav-links {
@@ -423,7 +423,7 @@ img {
   flex-wrap: wrap;
 }
 .footer-logo {
-  height: 40px;
+  height: 48px;
   width: auto;
 }
 .footer-meta {
@@ -1271,10 +1271,10 @@ img {
     padding: 64px 0;
   }
   .site-nav .container {
-    height: 96px;
+    height: 56px;
   }
   .nav-logo {
-    height: 68px;
+    height: 36px;
   }
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
