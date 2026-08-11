@@ -86,7 +86,7 @@ export default function PredictPage() {
     <div className="dashboard-shell">
       <Sidebar />
       <main className="dashboard-main dashboard-page predict-dashboard">
-        <DashboardHeader title="바이럴 가능성 예측" description="YouTube 영상 URL 하나로 확산 가능성과 핵심 신호를 분석합니다." />
+        <DashboardHeader title="바이럴 스코어" description="YouTube 영상 URL 하나로 확산 가능성과 핵심 신호를 분석합니다." />
 
         <section className="predict-studio">
           <div className={`predict-workbench ${result ? 'has-result' : ''} ${loading ? 'is-loading' : ''}`}>

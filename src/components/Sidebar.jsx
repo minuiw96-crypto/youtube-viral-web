@@ -21,8 +21,8 @@ const NAV_ITEMS = [
     to: '/my-channel',
     label: '내 채널',
     children: [
-      { to: '/my-channel', label: '채널 벤치마크' },
-      { to: '/my-channel/performance', label: '영상 성과 분석' },
+      { to: '/my-channel', label: '채널 비교' },
+      { to: '/my-channel/performance', label: '영상 인사이트' },
     ],
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -33,7 +33,7 @@ const NAV_ITEMS = [
   },
   {
     to: '/predict',
-    label: '바이럴 예측',
+    label: '바이럴 스코어',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M3 17 9 11l4 4 8-8" />

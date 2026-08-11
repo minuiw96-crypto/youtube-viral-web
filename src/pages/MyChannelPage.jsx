@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import DashboardHeader from '../components/DashboardHeader'
 import ScoreGauge from '../components/ScoreGauge'
@@ -60,6 +60,7 @@ export default function MyChannelPage({ view = 'benchmark' }) {
   const [selectedVideoId, setSelectedVideoId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const benchmarkTrackRef = useRef(null)
 
   useEffect(() => {
     let active = true
@@ -79,6 +80,10 @@ export default function MyChannelPage({ view = 'benchmark' }) {
       .finally(() => active && setLoading(false))
     return () => { active = false }
   }, [])
+
+  useEffect(() => {
+    benchmarkTrackRef.current?.scrollTo({ left: 0 })
+  }, [tier])
 
   const projectCategory = summary?.project_category
     || videos.find((video) => video.project_category || video.content_domain)?.project_category
@@ -137,7 +142,6 @@ export default function MyChannelPage({ view = 'benchmark' }) {
     return benchmarkChannels
       .filter((item) => item.id !== summary?.channel_id && item.subscribers !== null && item.subscribers >= current.min && item.subscribers <= current.max)
       .sort((a, b) => (b.averageScore ?? -1) - (a.averageScore ?? -1) || (b.subscribers ?? 0) - (a.subscribers ?? 0))
-      .slice(0, 5)
   }, [benchmarkChannels, summary?.channel_id, tier])
 
   const topChannels = useMemo(() => channels
@@ -170,12 +174,18 @@ export default function MyChannelPage({ view = 'benchmark' }) {
   const ownScores = videos.map((video) => number(video.viral_score)).filter((score) => score !== null)
   const ownAverageScore = ownScores.length ? ownScores.reduce((sum, score) => sum + score, 0) / ownScores.length : null
 
+  function scrollBenchmarkChannels(direction) {
+    const track = benchmarkTrackRef.current
+    if (!track) return
+    track.scrollBy({ left: direction * track.clientWidth * 0.86, behavior: 'smooth' })
+  }
+
   return (
     <div className="dashboard-shell">
       <Sidebar />
       <main className="dashboard-main dashboard-page">
         <DashboardHeader
-          title={view === 'performance' ? '영상 성과 분석' : `${categoryLabel === '-' ? '내 카테고리' : categoryLabel} 유튜브`}
+          title={view === 'performance' ? '영상 인사이트' : `${categoryLabel === '-' ? '내 카테고리' : categoryLabel} 유튜브`}
           description={view === 'performance'
             ? '조회수와 참여율을 기준으로 내 영상의 성과 위치를 확인하세요.'
             : `${categoryLabel === '-' ? '연결 채널' : categoryLabel} 카테고리의 추천 채널과 평균 점수를 비교합니다.`}
@@ -211,14 +221,18 @@ export default function MyChannelPage({ view = 'benchmark' }) {
                 ))}
               </div>
               {tierChannels.length ? (
-                <div className="benchmark-grid">
-                  {tierChannels.map((item) => (
-                    <article className="benchmark-card" key={item.id}>
-                      <ChannelAvatar channel={item} />
-                      <div><h3>{item.name}</h3><p>구독자 {formatSubscriberCount(item.subscribers)}</p></div>
-                      <strong>평균 {item.averageScore === null ? '-' : item.averageScore.toFixed(1)}점</strong>
-                    </article>
-                  ))}
+                <div className="benchmark-carousel">
+                  <button type="button" className="benchmark-carousel-arrow previous" onClick={() => scrollBenchmarkChannels(-1)} aria-label="이전 채널 보기">‹</button>
+                  <div className="benchmark-grid" ref={benchmarkTrackRef}>
+                    {tierChannels.map((item) => (
+                      <article className="benchmark-card" key={item.id}>
+                        <ChannelAvatar channel={item} />
+                        <div><h3>{item.name}</h3><p>구독자 {formatSubscriberCount(item.subscribers)}</p></div>
+                        <strong>평균 {item.averageScore === null ? '-' : item.averageScore.toFixed(1)}점</strong>
+                      </article>
+                    ))}
+                  </div>
+                  <button type="button" className="benchmark-carousel-arrow next" onClick={() => scrollBenchmarkChannels(1)} aria-label="다음 채널 보기">›</button>
                 </div>
               ) : <div className="compact-empty">이 구독자 구간에 추천할 {categoryLabel} 채널이 없습니다.</div>}
             </section>
