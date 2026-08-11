@@ -1723,10 +1723,10 @@ img {
 .prediction-category-chip { width: fit-content; margin: 13px 0 0; padding: 8px 14px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 9%, var(--surface)); color: var(--accent); font-size: 13px; font-weight: 800; }
 .prediction-gauge { --gauge-color: var(--accent); position: relative; width: min(100%, 520px); margin: 24px auto 20px; }
 .prediction-gauge svg { display: block; width: 100%; overflow: visible; }
-.prediction-gauge-track,
-.prediction-gauge-fill { fill: none; stroke-width: 15; stroke-linecap: butt; }
-.prediction-gauge-track { stroke: url(#prediction-gauge-gradient); opacity: .28; }
-.prediction-gauge-fill { stroke: url(#prediction-gauge-gradient); animation: prediction-gauge-fill 1.15s cubic-bezier(.2, .8, .2, 1) 1.35s both; }
+.prediction-gauge-segments path,
+.prediction-gauge-reveal { fill: none; stroke-width: 15; stroke-linecap: butt; }
+.prediction-gauge-segments.is-track { opacity: .28; }
+.prediction-gauge-reveal { stroke: #fff; animation: prediction-gauge-fill 1.15s cubic-bezier(.2, .8, .2, 1) 1.35s both; }
 .prediction-gauge-tick { stroke: var(--surface); stroke-width: 3; }
 .prediction-gauge-marker { fill: var(--text); opacity: 0; animation: prediction-marker-show .01s linear 1.35s forwards; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .28)); }
 .prediction-gauge-value { position: absolute; z-index: 2; top: 53%; left: 50%; display: flex; align-items: baseline; justify-content: center; padding: 3px 10px; transform: translate(-50%, -50%); white-space: nowrap; opacity: 0; animation: prediction-score-reveal .35s ease 2.52s forwards; }

@@ -7,6 +7,8 @@ const LEVELS = [
 ]
 
 const TICK_VALUES = [20, 40, 60, 80]
+const GAUGE_COLORS = ['#4A6EA5', '#4F9C8F', '#C9A227', '#E0672E', '#FF1E3D']
+const GAUGE_PATH = 'M 25 112 A 85 85 0 0 1 195 112'
 
 function arcPoint(value, radius) {
   const angle = Math.PI + (Math.PI * value) / 100
@@ -29,21 +31,20 @@ export default function PredictionSemicircleGauge({ score }) {
     <div className="prediction-gauge">
       <svg viewBox="0 0 220 132" role="img" aria-label={level ? `바이럴 점수 ${value.toFixed(1)}점, ${level.label}` : '바이럴 점수 없음'}>
         <defs>
-          <linearGradient id="prediction-gauge-gradient" x1="25" y1="0" x2="195" y2="0" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#4A6EA5" />
-            <stop offset="20%" stopColor="#4A6EA5" />
-            <stop offset="20%" stopColor="#4F9C8F" />
-            <stop offset="40%" stopColor="#4F9C8F" />
-            <stop offset="40%" stopColor="#C9A227" />
-            <stop offset="60%" stopColor="#C9A227" />
-            <stop offset="60%" stopColor="#E0672E" />
-            <stop offset="80%" stopColor="#E0672E" />
-            <stop offset="80%" stopColor="#FF1E3D" />
-            <stop offset="100%" stopColor="#FF1E3D" />
-          </linearGradient>
+          <mask id="prediction-gauge-reveal" x="0" y="0" width="220" height="132" maskUnits="userSpaceOnUse">
+            <path className="prediction-gauge-reveal" d={GAUGE_PATH} pathLength="100" strokeDasharray={`${value} 100`} />
+          </mask>
         </defs>
-        <path className="prediction-gauge-track" d="M 25 112 A 85 85 0 0 1 195 112" pathLength="100" />
-        <path className="prediction-gauge-fill" d="M 25 112 A 85 85 0 0 1 195 112" pathLength="100" strokeDasharray={`${value} 100`} />
+        <g className="prediction-gauge-segments is-track">
+          {GAUGE_COLORS.map((color, index) => (
+            <path key={color} d={GAUGE_PATH} pathLength="100" stroke={color} strokeDasharray={index === GAUGE_COLORS.length - 1 ? '20 80' : '19 81'} strokeDashoffset={index * -20} />
+          ))}
+        </g>
+        <g className="prediction-gauge-segments is-fill" mask="url(#prediction-gauge-reveal)">
+          {GAUGE_COLORS.map((color, index) => (
+            <path key={color} d={GAUGE_PATH} pathLength="100" stroke={color} strokeDasharray={index === GAUGE_COLORS.length - 1 ? '20 80' : '19 81'} strokeDashoffset={index * -20} />
+          ))}
+        </g>
         {TICK_VALUES.map((tick) => {
           const inner = arcPoint(tick, 76)
           const outer = arcPoint(tick, 94)
