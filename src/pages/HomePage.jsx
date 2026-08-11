@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar'
 import ScoreGauge from '../components/ScoreGauge'
 import { getVideoRanking } from '../api/client'
 import { formatCategory } from '../utils/categoryLabels'
+import { formatSubscriberCount } from '../utils/numberFormat'
 
 const RANK_LABELS = ['gold', 'silver', 'bronze']
 const RANK_STYLES = [
@@ -11,11 +12,6 @@ const RANK_STYLES = [
   { key: 'flag', label: '리본' },
   { key: 'minimal', label: '미니멀' },
 ]
-
-function formatNumber(n) {
-  const num = typeof n === 'string' ? Number(n) : n
-  return typeof num === 'number' && Number.isFinite(num) ? num.toLocaleString('ko-KR') : '-'
-}
 
 function getSubscriberCount(video) {
   return video.subscriber_count
@@ -185,7 +181,7 @@ export default function HomePage() {
                               <span>{video.channel_title || video.channel_name || '-'}</span>
                             </div>
                           </td>
-                          <td>{formatNumber(getSubscriberCount(video))}</td>
+                          <td>{formatSubscriberCount(getSubscriberCount(video))}</td>
                           <td>
                             <ScoreGauge score={video.viral_score} />
                           </td>

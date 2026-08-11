@@ -4,6 +4,7 @@ import DashboardHeader from '../components/DashboardHeader'
 import ScoreGauge from '../components/ScoreGauge'
 import { getChannelSummary, getChannelVideos, getVideoRanking } from '../api/client'
 import { formatCategory } from '../utils/categoryLabels'
+import { formatSubscriberCount } from '../utils/numberFormat'
 
 const TIERS = [
   { key: 'tier1', label: '1천~1만', min: 1000, max: 9999 },
@@ -187,7 +188,7 @@ export default function MyChannelPage({ view = 'benchmark' }) {
                 </div>
               </div>
               <div className="channel-kpis">
-                <div><span>구독자</span><strong>{compact(summary?.subscriber_count)}</strong></div>
+                <div><span>구독자</span><strong>{formatSubscriberCount(summary?.subscriber_count)}</strong></div>
                 <div><span>누적 조회수</span><strong>{compact(summary?.total_view_count)}</strong></div>
                 <div><span>평균 점수</span><strong>{ownAverageScore === null ? '-' : ownAverageScore.toFixed(1)}</strong></div>
               </div>
@@ -207,7 +208,7 @@ export default function MyChannelPage({ view = 'benchmark' }) {
                   {tierChannels.map((item) => (
                     <article className="benchmark-card" key={item.id}>
                       <ChannelAvatar channel={item} />
-                      <div><h3>{item.name}</h3><p>구독자 {compact(item.subscribers)}</p></div>
+                      <div><h3>{item.name}</h3><p>구독자 {formatSubscriberCount(item.subscribers)}</p></div>
                       <strong>모니터링 추천</strong>
                     </article>
                   ))}
@@ -226,7 +227,7 @@ export default function MyChannelPage({ view = 'benchmark' }) {
                       <button key={item.id} type="button" className={selectedChannel === item ? 'active' : ''} onClick={() => setSelectedChannelId(item.id)}>
                         <span className="top-channel-rank">{index + 1}</span>
                         <ChannelAvatar channel={item} />
-                        <span className="top-channel-copy"><strong>{item.name}</strong><small>구독자 {compact(item.subscribers)}</small></span>
+                        <span className="top-channel-copy"><strong>{item.name}</strong><small>구독자 {formatSubscriberCount(item.subscribers)}</small></span>
                         <b>{item.averageScore.toFixed(1)}</b>
                       </button>
                     ))}
