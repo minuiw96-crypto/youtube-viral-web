@@ -19,14 +19,21 @@ const NAV_ITEMS = [
   },
   {
     to: '/my-channel',
-    label: '내 채널',
-    children: [
-      { to: '/my-channel', label: '채널 리포트' },
-    ],
+    label: '채널리포트',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="12" cy="8" r="4" />
         <path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6" />
+      </svg>
+    ),
+  },
+  {
+    to: '/predict',
+    label: '바이럴스코어',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M3 17 9 11l4 4 8-8" />
+        <path d="M15 7h6v6" />
       </svg>
     ),
   },
@@ -41,16 +48,6 @@ const NAV_ITEMS = [
         <path d="M9 3h6" />
         <path d="M10 3v6l-5 8.5A2.3 2.3 0 0 0 7 21h10a2.3 2.3 0 0 0 2-3.5L14 9V3" />
         <path d="M8 15h8" />
-      </svg>
-    ),
-  },
-  {
-    to: '/predict',
-    label: '바이럴 스코어',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M3 17 9 11l4 4 8-8" />
-        <path d="M15 7h6v6" />
       </svg>
     ),
   },

@@ -184,12 +184,7 @@ export default function MyChannelPage({ view = 'benchmark' }) {
     <div className="dashboard-shell">
       <Sidebar />
       <main className="dashboard-main dashboard-page">
-        <DashboardHeader
-          title={view === 'performance' ? '영상 인사이트' : `${categoryLabel === '-' ? '내 카테고리' : categoryLabel} 유튜브`}
-          description={view === 'performance'
-            ? '조회수와 참여율을 기준으로 내 영상의 성과 위치를 확인하세요.'
-            : `${categoryLabel === '-' ? '연결 채널' : categoryLabel} 카테고리의 추천 채널과 평균 점수를 비교합니다.`}
-        />
+        <DashboardHeader title={view === 'performance' ? '영상 인사이트' : `${categoryLabel === '-' ? '내 카테고리' : categoryLabel} 유튜브`} />
 
         {loading && <div className="panel-state"><span className="loading-spinner" />채널 데이터를 불러오는 중입니다.</div>}
         {!loading && error && <div className="panel-state error-state">{error}</div>}

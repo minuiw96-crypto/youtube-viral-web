@@ -1,10 +1,20 @@
 const LEVELS = [
-  { label: '매우 낮음', max: 19, tone: 'very-low' },
-  { label: '낮음', max: 39, tone: 'low' },
-  { label: '보통', max: 59, tone: 'medium' },
-  { label: '높음', max: 79, tone: 'high' },
-  { label: '매우 높음', max: 100, tone: 'very-high' },
+  { label: '매우 낮음', max: 19 },
+  { label: '낮음', max: 39 },
+  { label: '보통', max: 59 },
+  { label: '높음', max: 79 },
+  { label: '매우 높음', max: 100 },
 ]
+
+const TICK_VALUES = [20, 40, 60, 80]
+
+function arcPoint(value, radius) {
+  const angle = Math.PI + (Math.PI * value) / 100
+  return {
+    x: 110 + Math.cos(angle) * radius,
+    y: 112 + Math.sin(angle) * radius,
+  }
+}
 
 function predictionLevel(score) {
   if (typeof score !== 'number' || !Number.isFinite(score)) return null
@@ -14,21 +24,22 @@ function predictionLevel(score) {
 export default function PredictionSemicircleGauge({ score }) {
   const value = typeof score === 'number' && Number.isFinite(score) ? Math.min(100, Math.max(0, score)) : 0
   const level = predictionLevel(score)
-  const activeLevelIndex = level ? LEVELS.indexOf(level) : -1
 
   return (
-    <div className={`prediction-gauge ${level?.tone || 'unavailable'}`}>
+    <div className="prediction-gauge">
       <svg viewBox="0 0 220 132" role="img" aria-label={level ? `바이럴 점수 ${value.toFixed(1)}점, ${level.label}` : '바이럴 점수 없음'}>
-        {LEVELS.map((item, index) => (
-          <path
-            key={item.label}
-            className={`prediction-gauge-segment ${item.tone} ${index <= activeLevelIndex ? 'is-reached' : ''} ${index === activeLevelIndex ? 'is-current' : ''}`}
-            d="M 25 112 A 85 85 0 0 1 195 112"
-            pathLength="100"
-            strokeDasharray="18.4 81.6"
-            strokeDashoffset={index * -20.4}
-          />
-        ))}
+        <path className="prediction-gauge-track" d="M 25 112 A 85 85 0 0 1 195 112" pathLength="100" />
+        <path className="prediction-gauge-fill" d="M 25 112 A 85 85 0 0 1 195 112" pathLength="100" strokeDasharray={`${value} 100`} />
+        {TICK_VALUES.map((tick) => {
+          const inner = arcPoint(tick, 76)
+          const outer = arcPoint(tick, 94)
+          return <line key={tick} className="prediction-gauge-tick" x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y} />
+        })}
+        <g className="prediction-gauge-needle" style={{ '--needle-angle': `${value * 1.8}deg` }}>
+          <line x1="110" y1="112" x2="47" y2="112" />
+          <circle cx="110" cy="112" r="7" />
+          <circle cx="110" cy="112" r="3" />
+        </g>
       </svg>
       <div className="prediction-gauge-value">
         <strong>{level ? value.toFixed(1) : '-'}</strong>

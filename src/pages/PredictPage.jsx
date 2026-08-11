@@ -21,7 +21,14 @@ function titleFromResult(result) {
     || valueOf(result?.metadata, 'title', 'video_title')
 }
 
-async function fetchYouTubeTitle(videoUrl) {
+function thumbnailFromResult(result) {
+  return valueOf(result, 'thumbnail_url', 'video_thumbnail_url')
+    || valueOf(result?.video, 'thumbnail_url', 'video_thumbnail_url')
+    || valueOf(result?.video_data, 'thumbnail_url', 'video_thumbnail_url')
+    || valueOf(result?.metadata, 'thumbnail_url', 'video_thumbnail_url')
+}
+
+async function fetchYouTubeMetadata(videoUrl) {
   const controller = new AbortController()
   const timeoutId = window.setTimeout(() => controller.abort(), 5000)
   try {
@@ -29,7 +36,10 @@ async function fetchYouTubeTitle(videoUrl) {
     const response = await fetch(endpoint, { signal: controller.signal })
     if (!response.ok) return null
     const metadata = await response.json()
-    return typeof metadata.title === 'string' ? metadata.title.trim() : null
+    return {
+      title: typeof metadata.title === 'string' ? metadata.title.trim() : '',
+      thumbnailUrl: typeof metadata.thumbnail_url === 'string' ? metadata.thumbnail_url : '',
+    }
   }
   catch {
     return null
@@ -55,6 +65,7 @@ export default function PredictPage() {
   const [category, setCategory] = useState(PREDICTION_CATEGORIES[0].value)
   const [result, setResult] = useState(null)
   const [videoTitle, setVideoTitle] = useState('')
+  const [videoThumbnail, setVideoThumbnail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -64,12 +75,14 @@ export default function PredictPage() {
     setLoading(true)
     setError('')
     setVideoTitle('')
+    setVideoThumbnail('')
     try {
       const videoUrl = url.trim()
-      const metadataTitlePromise = fetchYouTubeTitle(videoUrl)
+      const metadataPromise = fetchYouTubeMetadata(videoUrl)
       const prediction = await predictFromUrl(videoUrl, category)
-      const resolvedTitle = titleFromResult(prediction) || await metadataTitlePromise
-      setVideoTitle(resolvedTitle || '')
+      const metadata = await metadataPromise
+      setVideoTitle(titleFromResult(prediction) || metadata?.title || '')
+      setVideoThumbnail(thumbnailFromResult(prediction) || metadata?.thumbnailUrl || '')
       setResult(prediction)
     }
     catch (err) { setError(err.message || '예측에 실패했습니다.') }
@@ -81,12 +94,13 @@ export default function PredictPage() {
   const validScore = Number.isFinite(score) ? score : null
   const categoryLabel = PREDICTION_CATEGORIES.find((item) => item.value === category)?.label || '기타'
   const resultTitle = titleFromResult(result) || videoTitle || 'YouTube 영상'
+  const resultThumbnail = thumbnailFromResult(result) || videoThumbnail
 
   return (
     <div className="dashboard-shell">
       <Sidebar />
       <main className="dashboard-main dashboard-page predict-dashboard">
-        <DashboardHeader title="바이럴 스코어" description="YouTube 영상 URL 하나로 확산 가능성과 핵심 신호를 분석합니다." />
+        <DashboardHeader title="바이럴 스코어" />
 
         <section className="predict-studio">
           <div className={`predict-workbench ${result ? 'has-result' : ''} ${loading ? 'is-loading' : ''}`}>
@@ -94,9 +108,7 @@ export default function PredictPage() {
               <div className="predict-entry-layout">
                 <form className="predict-form-new" onSubmit={handleSubmit}>
                   <div className="predict-form-heading">
-                    <span>새 분석</span>
                     <h2>분석할 영상을 입력하세요</h2>
-                    <p>카테고리와 공개 YouTube 영상 주소가 필요합니다.</p>
                   </div>
                   <div className="predict-category-field">
                     <label htmlFor="prediction-category">영상 카테고리</label>
@@ -113,19 +125,6 @@ export default function PredictPage() {
                   {error && <p className="predict-error">{error}</p>}
                   <p className="input-note">공개 상태인 YouTube 영상 주소를 입력해 주세요.</p>
                 </form>
-                <aside className="predict-guide-panel">
-                  <span className="predict-guide-eyebrow">분석 결과</span>
-                  <h2>영상의 바이럴 가능성을 한눈에 확인합니다.</h2>
-                  <div className="predict-guide-items">
-                    <div><b>01</b><span><strong>영상 제목</strong><small>YouTube에 표시되는 제목</small></span></div>
-                    <div><b>02</b><span><strong>카테고리</strong><small>선택한 분석 기준</small></span></div>
-                    <div><b>03</b><span><strong>바이럴 스코어</strong><small>100점 기준의 5단계 결과</small></span></div>
-                  </div>
-                  <div className="predict-guide-scale" aria-label="바이럴 스코어 5단계">
-                    <i /><i /><i /><i /><i />
-                  </div>
-                  <div className="predict-guide-scale-labels"><span>매우 낮음</span><span>매우 높음</span></div>
-                </aside>
               </div>
             )}
 
@@ -133,13 +132,16 @@ export default function PredictPage() {
 
             {result && !loading && (
               <div className="prediction-result-new">
-                <div className="prediction-result-heading">
-                  <span>분석 완료</span>
-                  <h2>{resultTitle}</h2>
-                  <p className="prediction-category-chip">{categoryLabel}</p>
+                <span className="prediction-complete-status">분석 완료</span>
+                <div className="prediction-result-summary">
+                  {resultThumbnail ? <img src={resultThumbnail} alt="" className="prediction-result-thumbnail" /> : <div className="prediction-result-thumbnail thumbnail-fallback">영상 썸네일</div>}
+                  <div className="prediction-result-heading">
+                    <h2>{resultTitle}</h2>
+                    <p className="prediction-category-chip">{categoryLabel}</p>
+                  </div>
                 </div>
                 <PredictionSemicircleGauge score={validScore} />
-                <button type="button" className="analyze-again" onClick={() => { setResult(null); setVideoTitle(''); setUrl(''); setError('') }}>다른 영상 분석하기</button>
+                <button type="button" className="analyze-again" onClick={() => { setResult(null); setVideoTitle(''); setVideoThumbnail(''); setUrl(''); setError('') }}>다른 영상 분석하기</button>
               </div>
             )}
           </div>
