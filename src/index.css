@@ -179,7 +179,7 @@ img {
   gap: 24px;
 }
 .nav-logo {
-  height: 48px;
+  height: 62px;
   width: auto;
 }
 .nav-links {
@@ -423,7 +423,7 @@ img {
   flex-wrap: wrap;
 }
 .footer-logo {
-  height: 48px;
+  height: 60px;
   width: auto;
 }
 .footer-meta {
@@ -566,10 +566,10 @@ img {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  min-height: 48px;
+  min-height: 60px;
 }
 .sidebar-logo {
-  height: 48px;
+  height: 60px;
   width: auto;
 }
 .sidebar.collapsed .sidebar-top {
@@ -1274,7 +1274,7 @@ img {
     height: 56px;
   }
   .nav-logo {
-    height: 36px;
+    height: 46px;
   }
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
