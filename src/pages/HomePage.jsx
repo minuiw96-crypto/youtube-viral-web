@@ -11,6 +11,14 @@ function formatNumber(n) {
   return typeof num === 'number' && Number.isFinite(num) ? num.toLocaleString('ko-KR') : '-'
 }
 
+function getSubscriberCount(video) {
+  return video.subscriber_count
+    ?? video.channel_subscriber_count
+    ?? video.subscribers
+    ?? video.channel?.subscriber_count
+    ?? video.channel_data?.subscriber_count
+}
+
 function RankBadge({ index }) {
   if (index > 2) return <span className="rank-number">{index + 1}</span>
   return (
@@ -85,6 +93,9 @@ export default function HomePage() {
 
         {!loading && !error && videos && videos.length > 0 && (
           <>
+            <div className="rank-page-heading">
+              <h1>영상 랭킹</h1>
+            </div>
             <div className="rank-search-bar">
               <div className="rank-search-input">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -109,10 +120,7 @@ export default function HomePage() {
             <div className="rank-table-card">
               <div className="rank-table-head">
                 <div className="rank-table-title">
-                  <h2>TOP 10 영상 스코어</h2>
-                  <span className="rank-table-caption">
-                    {search.trim() ? `검색된 ${top10.length}개 영상 중 스코어 상위` : '전체 채널 기준 바이럴 스코어 순위'}
-                  </span>
+                  <h2>영상 TOP10</h2>
                 </div>
               </div>
               {top10.length === 0 ? (
@@ -167,7 +175,7 @@ export default function HomePage() {
                               <span>{video.channel_title || video.channel_name || '-'}</span>
                             </div>
                           </td>
-                          <td>{formatNumber(video.subscriber_count)}</td>
+                          <td>{formatNumber(getSubscriberCount(video))}</td>
                           <td>
                             <ScoreGauge score={video.viral_score} />
                           </td>

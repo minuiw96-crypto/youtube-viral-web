@@ -29,8 +29,7 @@ function pct(value) {
   return parsed === null ? '-' : `${parsed > 0 ? '+' : ''}${parsed.toFixed(1)}%`
 }
 
-export default function MyChannelPage() {
-  const [view, setView] = useState('benchmark')
+export default function MyChannelPage({ view = 'benchmark' }) {
   const [summary, setSummary] = useState(null)
   const [videos, setVideos] = useState([])
   const [ranking, setRanking] = useState([])
@@ -96,16 +95,11 @@ export default function MyChannelPage() {
       <Sidebar />
       <main className="dashboard-main dashboard-page">
         <DashboardHeader
-          eyebrow="CHANNEL INTELLIGENCE"
-          title="내 채널 리포트"
-          description={`${categoryLabel} 시장 안에서 내 채널의 위치와 영상 성과를 확인하세요.`}
-          actions={<span className="data-freshness"><i />실시간 데이터</span>}
+          title={view === 'performance' ? '영상 성과 분석' : '채널 벤치마크'}
+          description={view === 'performance'
+            ? '내 영상의 조회수와 바이럴 스코어 분포를 확인하세요.'
+            : `${categoryLabel} 시장 안에서 내 채널의 위치를 확인하세요.`}
         />
-
-        <div className="report-tabs" role="tablist" aria-label="채널 리포트 보기">
-          <button type="button" className={view === 'benchmark' ? 'active' : ''} onClick={() => setView('benchmark')}>채널 벤치마크</button>
-          <button type="button" className={view === 'performance' ? 'active' : ''} onClick={() => setView('performance')}>영상 성과 분석</button>
-        </div>
 
         {loading && <div className="panel-state"><span className="loading-spinner" />채널 데이터를 불러오는 중입니다.</div>}
         {!loading && error && <div className="panel-state error-state">{error}</div>}

@@ -20,6 +20,10 @@ const NAV_ITEMS = [
   {
     to: '/my-channel',
     label: '내 채널',
+    children: [
+      { to: '/my-channel', label: '채널 벤치마크' },
+      { to: '/my-channel/performance', label: '영상 성과 분석' },
+    ],
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="12" cy="8" r="4" />
@@ -94,26 +98,35 @@ export default function Sidebar() {
         </button>
       </div>
 
-      <div className="sidebar-workspace">
-        <span className="workspace-mark">P</span>
-        <div className="sidebar-link-label">
-          <strong>PredicTube</strong>
-          <small>Creator analytics</small>
-        </div>
-      </div>
-
       <nav className="sidebar-nav">
         <span className="sidebar-section-label sidebar-link-label">WORKSPACE</span>
-        {NAV_ITEMS.map((item) => (
-          <Link
-            key={item.to}
-            to={item.to}
-            className={`sidebar-link ${location.pathname === item.to ? 'active' : ''}`}
-          >
-            {item.icon}
-            <span className="sidebar-link-label">{item.label}</span>
-          </Link>
-        ))}
+        {NAV_ITEMS.map((item) => {
+          const active = item.children
+            ? location.pathname.startsWith(item.to)
+            : location.pathname === item.to
+          return (
+            <div className={`sidebar-nav-group ${active ? 'active' : ''}`} key={item.to}>
+              <Link to={item.to} className={`sidebar-link ${active ? 'active' : ''}`} aria-expanded={item.children ? active : undefined}>
+                {item.icon}
+                <span className="sidebar-link-label">{item.label}</span>
+                {item.children && (
+                  <svg className="sidebar-link-label sidebar-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                )}
+              </Link>
+              {item.children && active && !collapsed && (
+                <div className="sidebar-subnav">
+                  {item.children.map((child) => (
+                    <Link key={child.to} to={child.to} className={location.pathname === child.to ? 'active' : ''}>
+                      {child.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </nav>
 
       <div className="sidebar-bottom">

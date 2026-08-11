@@ -25,7 +25,7 @@ export default function SettingsPage() {
     <div className="dashboard-shell">
       <Sidebar />
       <main className="dashboard-main dashboard-page settings-dashboard">
-        <DashboardHeader eyebrow="PREFERENCES" title="설정" description="계정 정보와 화면 환경을 관리합니다." />
+        <DashboardHeader title="설정" description="계정 정보와 화면 환경을 관리합니다." />
         <div className="settings-layout-new">
           <nav className="settings-nav" aria-label="설정 메뉴"><a href="#account" className="active">계정</a><a href="#appearance">화면 설정</a><a href="#session">로그인 세션</a></nav>
           <div className="settings-content">

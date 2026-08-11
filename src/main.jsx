@@ -31,7 +31,15 @@ const router = createBrowserRouter([
         path: '/my-channel',
         element: (
           <RequireAuth>
-            <MyChannelPage />
+            <MyChannelPage view="benchmark" />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: '/my-channel/performance',
+        element: (
+          <RequireAuth>
+            <MyChannelPage view="performance" />
           </RequireAuth>
         ),
       },
