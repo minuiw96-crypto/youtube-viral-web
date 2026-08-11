@@ -6,19 +6,6 @@ import { formatCategory } from '../utils/categoryLabels'
 import { formatSubscriberCount } from '../utils/numberFormat'
 
 const RANK_LABELS = ['gold', 'silver', 'bronze']
-const RANK_IMAGE_URLS = [
-  'https://res-static.noxinfluencer.com/kol20/2026/08/public/img/rank1.f0c1a4fb79352929b918f2921e8ba058.png',
-  'https://res-static.noxinfluencer.com/kol20/2026/08/public/img/rank2.5ebf5808f26db7ca00ca24c859109d81.png',
-  'https://res-static.noxinfluencer.com/kol20/2026/08/public/img/rank3.2c9a17ec5beede48a64a72b6c3b00e75.png',
-]
-const RANK_STYLES = [
-  { key: 'crown', label: '왕관' },
-  { key: 'medal', label: '메달' },
-  { key: 'image', label: '랭크 이미지' },
-  { key: 'chip', label: '번호 칩' },
-  { key: 'flag', label: '리본' },
-  { key: 'minimal', label: '미니멀' },
-]
 
 function getSubscriberCount(video) {
   return video.subscriber_count
@@ -28,27 +15,10 @@ function getSubscriberCount(video) {
     ?? video.channel_data?.subscriber_count
 }
 
-function RankBadge({ index, style = 'medal' }) {
+function RankBadge({ index }) {
   if (index > 2) return <span className="rank-number">{index + 1}</span>
-  if (style === 'image') {
-    return (
-      <img
-        className="rank-image-badge"
-        src={RANK_IMAGE_URLS[index]}
-        alt={`${index + 1}위`}
-        referrerPolicy="no-referrer"
-      />
-    )
-  }
-  if (style === 'crown') {
-    return (
-      <svg className={`rank-crown ${RANK_LABELS[index]}`} viewBox="0 0 24 20" fill="currentColor" aria-label={`${index + 1}위`}>
-        <path d="M2 18 L1 7 L7 11 L12 3 L17 11 L23 7 L22 18 Z" />
-      </svg>
-    )
-  }
   return (
-    <span className={`rank-badge rank-badge-${style} ${RANK_LABELS[index]}`} aria-label={`${index + 1}위`}>
+    <span className={`rank-badge rank-badge-medal ${RANK_LABELS[index]}`} aria-label={`${index + 1}위`}>
       <i />
       <b>{index + 1}</b>
     </span>
@@ -59,7 +29,6 @@ export default function HomePage() {
   const [videos, setVideos] = useState(null)
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
-  const [rankStyle, setRankStyle] = useState('medal')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -144,14 +113,6 @@ export default function HomePage() {
                   <h2>영상 TOP10</h2>
                   <p>전체 {videos.length.toLocaleString('ko-KR')}개 중 검색 결과 {filteredVideos.length.toLocaleString('ko-KR')}개 · 상위 {top10.length}개 표시</p>
                 </div>
-                <div className="rank-style-picker" aria-label="상위 순위 디자인 선택">
-                  {RANK_STYLES.map((item) => (
-                    <button key={item.key} type="button" className={rankStyle === item.key ? 'active' : ''} onClick={() => setRankStyle(item.key)}>
-                      <RankBadge index={0} style={item.key} />
-                      <span>{item.label}</span>
-                    </button>
-                  ))}
-                </div>
               </div>
               {top10.length === 0 ? (
                 <p className="dashboard-status">검색 결과가 없습니다.</p>
@@ -180,7 +141,7 @@ export default function HomePage() {
                       {top10.map((video, i) => (
                         <tr key={video.video_id || i}>
                           <td>
-                            <RankBadge index={i} style={rankStyle} />
+                            <RankBadge index={i} />
                           </td>
                           <td>
                             <div className="rank-video-cell">
