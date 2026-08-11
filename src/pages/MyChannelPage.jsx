@@ -53,6 +53,7 @@ export default function MyChannelPage({ view = 'benchmark' }) {
   const [summary, setSummary] = useState(null)
   const [videos, setVideos] = useState([])
   const [ranking, setRanking] = useState([])
+  const [channelDirectory, setChannelDirectory] = useState([])
   const [tier, setTier] = useState('tier3')
   const [selectedChannelId, setSelectedChannelId] = useState(null)
   const [selectedVideoId, setSelectedVideoId] = useState(null)
@@ -71,6 +72,7 @@ export default function MyChannelPage({ view = 'benchmark' }) {
         if (currentTier) setTier(currentTier.key)
         setVideos(videoData.videos || videoData.video_list || [])
         setRanking(rankData.video_ranking || [])
+        setChannelDirectory(rankData.channel_benchmarks || [])
       })
       .catch((err) => active && setError(err.message || '채널 데이터를 불러오지 못했습니다.'))
       .finally(() => active && setLoading(false))
@@ -113,13 +115,22 @@ export default function MyChannelPage({ view = 'benchmark' }) {
     }))
   }, [categoryRanking])
 
+  const benchmarkChannels = useMemo(() => channelDirectory
+    .filter((item) => categoryKey(item.project_category || item.category) === categoryKey(projectCategory))
+    .map((item) => ({
+      id: item.channel_id,
+      name: item.channel_title || item.channel_name || '채널명 없음',
+      thumbnail: item.channel_thumbnail_url,
+      subscribers: number(item.subscriber_count),
+    })), [channelDirectory, projectCategory])
+
   const tierChannels = useMemo(() => {
     const current = TIERS.find((item) => item.key === tier) || TIERS[0]
-    return channels
+    return benchmarkChannels
       .filter((item) => item.id !== summary?.channel_id && item.subscribers !== null && item.subscribers >= current.min && item.subscribers <= current.max)
-      .sort((a, b) => (b.averageScore ?? -1) - (a.averageScore ?? -1) || (b.subscribers ?? 0) - (a.subscribers ?? 0))
+      .sort((a, b) => (b.subscribers ?? 0) - (a.subscribers ?? 0))
       .slice(0, 5)
-  }, [channels, summary?.channel_id, tier])
+  }, [benchmarkChannels, summary?.channel_id, tier])
 
   const topChannels = useMemo(() => channels
     .filter((item) => item.averageScore !== null)
@@ -197,7 +208,7 @@ export default function MyChannelPage({ view = 'benchmark' }) {
                     <article className="benchmark-card" key={item.id}>
                       <ChannelAvatar channel={item} />
                       <div><h3>{item.name}</h3><p>구독자 {compact(item.subscribers)}</p></div>
-                      <strong>평균 {item.averageScore === null ? '-' : item.averageScore.toFixed(1)}점</strong>
+                      <strong>모니터링 추천</strong>
                     </article>
                   ))}
                 </div>

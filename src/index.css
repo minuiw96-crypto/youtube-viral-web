@@ -749,6 +749,13 @@ img {
   font-size: 18px;
   font-weight: 800;
 }
+.rank-table-title p { color: var(--text-dim); font-size: 11px; }
+.rank-style-picker { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.rank-style-picker > button { min-width: 74px; height: 50px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text-dim); cursor: pointer; }
+.rank-style-picker > button:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); color: var(--text); }
+.rank-style-picker > button.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--surface)); color: var(--accent); }
+.rank-style-picker > button > span:last-child { font-size: 10px; font-weight: 700; white-space: nowrap; }
+.rank-style-picker .rank-badge { width: 25px; height: 25px; font-size: 10px; }
 .category-pill {
   display: inline-block;
   font-size: 12px;
@@ -833,15 +840,19 @@ img {
   font-size: 14px;
   color: var(--text);
 }
-.rank-crown {
-  display: block;
-  width: 26px;
-  height: 22px;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
-}
-.rank-crown.gold { color: #d4af37; }
-.rank-crown.silver { color: #9298a3; }
-.rank-crown.bronze { color: #b06a3a; }
+.rank-badge { --rank-color: var(--text-dim); position: relative; width: 34px; height: 34px; display: inline-grid; place-items: center; color: var(--rank-color); font-size: 13px; font-style: normal; }
+.rank-badge b { position: relative; z-index: 1; line-height: 1; }
+.rank-badge.gold { --rank-color: #d5a51f; }
+.rank-badge.silver { --rank-color: #8c96a5; }
+.rank-badge.bronze { --rank-color: #b87346; }
+.rank-badge-medal { border: 2px solid var(--rank-color); border-radius: 50%; background: color-mix(in srgb, var(--rank-color) 10%, var(--surface)); box-shadow: inset 0 0 0 3px var(--surface), 0 2px 7px color-mix(in srgb, var(--rank-color) 18%, transparent); }
+.rank-badge-medal i { position: absolute; top: -5px; width: 12px; height: 7px; border-radius: 2px 2px 0 0; background: var(--rank-color); clip-path: polygon(0 0, 42% 0, 50% 100%, 58% 0, 100% 0, 76% 100%, 24% 100%); }
+.rank-badge-chip { border-radius: 9px; background: color-mix(in srgb, var(--rank-color) 14%, var(--surface)); box-shadow: inset 3px 0 var(--rank-color); }
+.rank-badge-chip::after { content: ''; position: absolute; inset: 5px; border: 1px solid color-mix(in srgb, var(--rank-color) 42%, transparent); border-radius: 5px; }
+.rank-badge-flag { align-items: start; padding-top: 8px; color: white; background: var(--rank-color); clip-path: polygon(12% 0, 88% 0, 88% 100%, 50% 78%, 12% 100%); filter: drop-shadow(0 3px 4px color-mix(in srgb, var(--rank-color) 25%, transparent)); }
+.rank-badge-minimal { width: 38px; justify-items: start; padding-left: 13px; font-size: 15px; }
+.rank-badge-minimal::before { content: ''; position: absolute; left: 3px; width: 4px; height: 24px; border-radius: 999px; background: var(--rank-color); }
+.rank-badge-minimal::after { content: ''; position: absolute; right: 0; bottom: 6px; width: 13px; height: 1px; background: color-mix(in srgb, var(--rank-color) 55%, transparent); }
 .rank-video-cell {
   display: flex;
   align-items: center;

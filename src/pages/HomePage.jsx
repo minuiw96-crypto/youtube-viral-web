@@ -5,6 +5,12 @@ import { getVideoRanking } from '../api/client'
 import { formatCategory } from '../utils/categoryLabels'
 
 const RANK_LABELS = ['gold', 'silver', 'bronze']
+const RANK_STYLES = [
+  { key: 'medal', label: '메달' },
+  { key: 'chip', label: '번호 칩' },
+  { key: 'flag', label: '리본' },
+  { key: 'minimal', label: '미니멀' },
+]
 
 function formatNumber(n) {
   const num = typeof n === 'string' ? Number(n) : n
@@ -19,17 +25,13 @@ function getSubscriberCount(video) {
     ?? video.channel_data?.subscriber_count
 }
 
-function RankBadge({ index }) {
+function RankBadge({ index, style = 'medal' }) {
   if (index > 2) return <span className="rank-number">{index + 1}</span>
   return (
-    <svg
-      className={`rank-crown ${RANK_LABELS[index]}`}
-      viewBox="0 0 24 20"
-      fill="currentColor"
-      aria-label={`${index + 1}위`}
-    >
-      <path d="M2 18 L1 7 L7 11 L12 3 L17 11 L23 7 L22 18 Z" />
-    </svg>
+    <span className={`rank-badge rank-badge-${style} ${RANK_LABELS[index]}`} aria-label={`${index + 1}위`}>
+      <i />
+      <b>{index + 1}</b>
+    </span>
   )
 }
 
@@ -37,6 +39,7 @@ export default function HomePage() {
   const [videos, setVideos] = useState(null)
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
+  const [rankStyle, setRankStyle] = useState('medal')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -61,9 +64,9 @@ export default function HomePage() {
     setSearch(searchInput)
   }
 
-  const top10 = useMemo(() => {
+  const filteredVideos = useMemo(() => {
     if (!videos) return []
-    let filtered = videos
+    let filtered = videos.slice()
     const q = search.trim().toLowerCase()
     if (q) {
       filtered = filtered.filter((v) => {
@@ -73,11 +76,9 @@ export default function HomePage() {
         return categoryLabel.includes(q) || channelName.includes(q) || title.includes(q)
       })
     }
-    return filtered
-      .slice()
-      .sort((a, b) => (b.viral_score ?? -Infinity) - (a.viral_score ?? -Infinity))
-      .slice(0, 10)
+    return filtered.sort((a, b) => (Number(b.viral_score) || -Infinity) - (Number(a.viral_score) || -Infinity))
   }, [videos, search])
+  const top10 = useMemo(() => filteredVideos.slice(0, 10), [filteredVideos])
 
   return (
     <div className="dashboard-shell">
@@ -121,6 +122,15 @@ export default function HomePage() {
               <div className="rank-table-head">
                 <div className="rank-table-title">
                   <h2>영상 TOP10</h2>
+                  <p>전체 {videos.length.toLocaleString('ko-KR')}개 중 검색 결과 {filteredVideos.length.toLocaleString('ko-KR')}개 · 상위 {top10.length}개 표시</p>
+                </div>
+                <div className="rank-style-picker" aria-label="상위 순위 디자인 선택">
+                  {RANK_STYLES.map((item) => (
+                    <button key={item.key} type="button" className={rankStyle === item.key ? 'active' : ''} onClick={() => setRankStyle(item.key)}>
+                      <RankBadge index={0} style={item.key} />
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
               {top10.length === 0 ? (
@@ -150,7 +160,7 @@ export default function HomePage() {
                       {top10.map((video, i) => (
                         <tr key={video.video_id || i}>
                           <td>
-                            <RankBadge index={i} />
+                            <RankBadge index={i} style={rankStyle} />
                           </td>
                           <td>
                             <div className="rank-video-cell">
