@@ -70,7 +70,7 @@ const PLANS = [
   },
   {
     name: 'Pro',
-    price: '₩29,000',
+    price: '₩7,900',
     period: '/ 월',
     features: [
       '무제한 바이럴 스코어 조회',

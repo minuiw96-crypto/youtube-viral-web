@@ -116,20 +116,27 @@ export default function MyChannelPage({ view = 'benchmark' }) {
     }))
   }, [categoryRanking])
 
-  const benchmarkChannels = useMemo(() => channelDirectory
-    .filter((item) => categoryKey(item.project_category || item.category) === categoryKey(projectCategory))
-    .map((item) => ({
-      id: item.channel_id,
-      name: item.channel_title || item.channel_name || '채널명 없음',
-      thumbnail: item.channel_thumbnail_url,
-      subscribers: number(item.subscriber_count),
-    })), [channelDirectory, projectCategory])
+  const benchmarkChannels = useMemo(() => {
+    const scoredChannels = new Map(channels.map((item) => [item.id, item]))
+    return channelDirectory
+      .filter((item) => categoryKey(item.project_category || item.category) === categoryKey(projectCategory))
+      .map((item) => {
+        const scoredChannel = scoredChannels.get(item.channel_id)
+        return {
+          id: item.channel_id,
+          name: item.channel_title || item.channel_name || '채널명 없음',
+          thumbnail: item.channel_thumbnail_url,
+          subscribers: number(item.subscriber_count),
+          averageScore: number(item.average_score ?? item.avg_viral_score) ?? scoredChannel?.averageScore ?? null,
+        }
+      })
+  }, [channelDirectory, channels, projectCategory])
 
   const tierChannels = useMemo(() => {
     const current = TIERS.find((item) => item.key === tier) || TIERS[0]
     return benchmarkChannels
       .filter((item) => item.id !== summary?.channel_id && item.subscribers !== null && item.subscribers >= current.min && item.subscribers <= current.max)
-      .sort((a, b) => (b.subscribers ?? 0) - (a.subscribers ?? 0))
+      .sort((a, b) => (b.averageScore ?? -1) - (a.averageScore ?? -1) || (b.subscribers ?? 0) - (a.subscribers ?? 0))
       .slice(0, 5)
   }, [benchmarkChannels, summary?.channel_id, tier])
 
@@ -209,7 +216,7 @@ export default function MyChannelPage({ view = 'benchmark' }) {
                     <article className="benchmark-card" key={item.id}>
                       <ChannelAvatar channel={item} />
                       <div><h3>{item.name}</h3><p>구독자 {formatSubscriberCount(item.subscribers)}</p></div>
-                      <strong>모니터링 추천</strong>
+                      <strong>평균 {item.averageScore === null ? '-' : item.averageScore.toFixed(1)}점</strong>
                     </article>
                   ))}
                 </div>
