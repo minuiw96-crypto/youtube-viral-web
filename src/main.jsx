@@ -4,6 +4,7 @@ import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import './index.css'
 import RootLayout from './components/RootLayout'
 import RequireAuth from './components/RequireAuth'
+import RequireAdmin from './components/RequireAdmin'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -11,6 +12,7 @@ import HomePage from './pages/HomePage'
 import MyChannelPage from './pages/MyChannelPage'
 import PredictPage from './pages/PredictPage'
 import SettingsPage from './pages/SettingsPage'
+import AdminPage from './pages/AdminPage'
 
 const router = createBrowserRouter([
   {
@@ -57,6 +59,14 @@ const router = createBrowserRouter([
           <RequireAuth>
             <PredictPage />
           </RequireAuth>
+        ),
+      },
+      {
+        path: '/admin',
+        element: (
+          <RequireAdmin>
+            <AdminPage />
+          </RequireAdmin>
         ),
       },
       {

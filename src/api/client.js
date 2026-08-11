@@ -91,6 +91,10 @@ export function getChannelVideos(channelId) {
 }
 
 export function getVideoRanking() {
+  return getAdminOverview()
+}
+
+export function getAdminOverview() {
   return apiRequest('/api/dashboard/admin-overview')
 }
 

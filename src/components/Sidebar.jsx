@@ -40,6 +40,7 @@ const NAV_ITEMS = [
   {
     to: '/lab',
     label: '실험실',
+    beta: 'Beta!',
     children: [
       { to: '/lab/video-insights', label: '영상 인사이트' },
     ],
@@ -48,6 +49,17 @@ const NAV_ITEMS = [
         <path d="M9 3h6" />
         <path d="M10 3v6l-5 8.5A2.3 2.3 0 0 0 7 21h10a2.3 2.3 0 0 0 2-3.5L14 9V3" />
         <path d="M8 15h8" />
+      </svg>
+    ),
+  },
+  {
+    to: '/admin',
+    label: '관리자',
+    adminOnly: true,
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 3 4.5 6v5.5c0 4.4 3 8.1 7.5 9.5 4.5-1.4 7.5-5.1 7.5-9.5V6L12 3Z" />
+        <path d="m9 12 2 2 4-4" />
       </svg>
     ),
   },
@@ -109,6 +121,7 @@ export default function Sidebar() {
       <nav className="sidebar-nav">
         <span className="sidebar-section-label sidebar-link-label">WORKSPACE</span>
         {NAV_ITEMS.map((item) => {
+          if (item.adminOnly && user?.role !== 'admin') return null
           const active = item.children
             ? location.pathname.startsWith(item.to)
             : location.pathname === item.to
@@ -117,6 +130,7 @@ export default function Sidebar() {
               <Link to={item.to} className={`sidebar-link ${active ? 'active' : ''}`} aria-expanded={item.children ? active : undefined}>
                 {item.icon}
                 <span className="sidebar-link-label">{item.label}</span>
+                {item.beta && <span className="sidebar-beta sidebar-link-label">{item.beta}</span>}
                 {item.children && (
                   <svg className="sidebar-link-label sidebar-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="m6 9 6 6 6-6" />

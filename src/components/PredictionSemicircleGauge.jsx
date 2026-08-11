@@ -52,7 +52,6 @@ export default function PredictionSemicircleGauge({ score }) {
       </svg>
       <div className="prediction-gauge-value">
         <strong>{level ? value.toFixed(1) : '-'}</strong>
-        <span>/ 100</span>
       </div>
       <div className="prediction-levels" aria-label="바이럴 점수 단계">
         {LEVELS.map((item) => <span key={item.label} className={level?.label === item.label ? 'active' : ''}>{item.label}</span>)}
