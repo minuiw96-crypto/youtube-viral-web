@@ -566,10 +566,10 @@ img {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  min-height: 40px;
+  min-height: 48px;
 }
 .sidebar-logo {
-  height: 32px;
+  height: 48px;
   width: auto;
 }
 .sidebar.collapsed .sidebar-top {
