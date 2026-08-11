@@ -14,6 +14,31 @@ function valueOf(result, ...keys) {
   return null
 }
 
+function titleFromResult(result) {
+  return valueOf(result, 'title', 'video_title')
+    || valueOf(result?.video, 'title', 'video_title')
+    || valueOf(result?.video_data, 'title', 'video_title')
+    || valueOf(result?.metadata, 'title', 'video_title')
+}
+
+async function fetchYouTubeTitle(videoUrl) {
+  const controller = new AbortController()
+  const timeoutId = window.setTimeout(() => controller.abort(), 5000)
+  try {
+    const endpoint = `https://www.youtube.com/oembed?url=${encodeURIComponent(videoUrl)}&format=json`
+    const response = await fetch(endpoint, { signal: controller.signal })
+    if (!response.ok) return null
+    const metadata = await response.json()
+    return typeof metadata.title === 'string' ? metadata.title.trim() : null
+  }
+  catch {
+    return null
+  }
+  finally {
+    window.clearTimeout(timeoutId)
+  }
+}
+
 function OrbitVisual({ loading = false }) {
   return (
     <div className={`signal-orbit ${loading ? 'loading' : ''}`} aria-hidden="true">
@@ -29,6 +54,7 @@ export default function PredictPage() {
   const [url, setUrl] = useState('')
   const [category, setCategory] = useState(PREDICTION_CATEGORIES[0].value)
   const [result, setResult] = useState(null)
+  const [videoTitle, setVideoTitle] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -37,8 +63,14 @@ export default function PredictPage() {
     if (!url.trim()) return
     setLoading(true)
     setError('')
+    setVideoTitle('')
     try {
-      setResult(await predictFromUrl(url.trim(), category))
+      const videoUrl = url.trim()
+      const metadataTitlePromise = fetchYouTubeTitle(videoUrl)
+      const prediction = await predictFromUrl(videoUrl, category)
+      const resolvedTitle = titleFromResult(prediction) || await metadataTitlePromise
+      setVideoTitle(resolvedTitle || '')
+      setResult(prediction)
     }
     catch (err) { setError(err.message || '예측에 실패했습니다.') }
     finally { setLoading(false) }
@@ -48,7 +80,7 @@ export default function PredictPage() {
   const score = rawScore === null ? null : Number(rawScore)
   const validScore = Number.isFinite(score) ? score : null
   const categoryLabel = PREDICTION_CATEGORIES.find((item) => item.value === category)?.label || '기타'
-  const resultTitle = valueOf(result, 'title', 'video_title') || (result?.video_id ? `YouTube 영상 · ${result.video_id}` : 'YouTube 영상')
+  const resultTitle = titleFromResult(result) || videoTitle || 'YouTube 영상'
 
   return (
     <div className="dashboard-shell">
@@ -90,7 +122,7 @@ export default function PredictPage() {
                   <p className="prediction-category-chip">{categoryLabel}</p>
                 </div>
                 <PredictionSemicircleGauge score={validScore} />
-                <button type="button" className="analyze-again" onClick={() => { setResult(null); setUrl(''); setError('') }}>다른 영상 분석하기</button>
+                <button type="button" className="analyze-again" onClick={() => { setResult(null); setVideoTitle(''); setUrl(''); setError('') }}>다른 영상 분석하기</button>
               </div>
             )}
           </div>
