@@ -460,13 +460,7 @@ img {
 .auth-logo {
   width: min(320px, 70vw);
   height: auto;
-  margin-bottom: 4px;
-}
-.auth-slogan {
-  font-size: 15px;
-  color: var(--text-dim);
   margin-bottom: 36px;
-  text-align: center;
 }
 .auth-card {
   width: 100%;
@@ -756,9 +750,23 @@ img {
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
+  border: 1px solid transparent;
   white-space: nowrap;
+}
+.category-pill-mukbang {
+  border-color: color-mix(in srgb, #ff704d 38%, transparent);
+  background: color-mix(in srgb, #ff704d 14%, transparent);
+  color: #ff8064;
+}
+.category-pill-gaming {
+  border-color: color-mix(in srgb, #668cff 38%, transparent);
+  background: color-mix(in srgb, #668cff 14%, transparent);
+  color: #86a2ff;
+}
+.category-pill-default {
+  border-color: color-mix(in srgb, #4ec9a5 38%, transparent);
+  background: color-mix(in srgb, #4ec9a5 14%, transparent);
+  color: #5fd2b0;
 }
 .channel-cell {
   display: flex;
@@ -1657,9 +1665,9 @@ img {
 .performance-layout .report-panel { margin: 0; }
 .bubble-chart { position: relative; height: 500px; margin: 16px 18px 18px 28px; border-left: 1px solid var(--border); border-bottom: 1px solid var(--border); background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 20% 20%; }
 .bubble-chart::after { content: ''; position: absolute; top: 5%; right: 4%; width: 42%; height: 38%; border-radius: var(--radius-md); background: color-mix(in srgb, var(--accent) 7%, transparent); pointer-events: none; }
-.axis-label { position: absolute; color: var(--text-dim); font-size: 10px; font-weight: 700; letter-spacing: .08em; }
-.axis-y { top: 0; left: -26px; writing-mode: vertical-rl; transform: rotate(180deg); }
-.axis-x { right: 0; bottom: -22px; }
+.axis-label { position: absolute; z-index: 3; padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--surface) 92%, transparent); color: var(--text); font-size: 12px; font-weight: 800; line-height: 1; letter-spacing: 0; box-shadow: 0 2px 8px color-mix(in srgb, #000 14%, transparent); }
+.axis-y { top: 12px; left: 12px; writing-mode: horizontal-tb; transform: none; }
+.axis-x { right: 12px; bottom: 12px; }
 .chart-zone-label { position: absolute; z-index: 1; top: 9%; right: 9%; color: var(--accent); font-size: 11px; font-weight: 800; pointer-events: none; }
 .video-bubble { position: absolute; z-index: 2; width: var(--bubble-size); height: var(--bubble-size); margin: calc(var(--bubble-size) / -2); border: 5px solid color-mix(in srgb, var(--accent) 15%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--accent) 55%, transparent); cursor: pointer; transition: transform .15s ease, background .15s ease, box-shadow .15s ease; }
 .video-bubble:hover,
@@ -1676,6 +1684,7 @@ img {
 
 /* prediction studio */
 .predict-dashboard { display: flex; flex-direction: column; }
+.predict-dashboard .dashboard-header { max-width: 920px; margin-right: auto; margin-left: auto; }
 .predict-studio { max-width: 920px; width: 100%; margin: 20px auto 0; min-height: 610px; border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; background: var(--surface); box-shadow: var(--shadow); }
 .predict-workbench { min-height: 610px; display: flex; flex-direction: column; padding: clamp(36px, 5vw, 70px); }
 .predict-workbench.is-loading,
@@ -1759,6 +1768,7 @@ img {
 .admin-powerbi-empty p { font-size: 12px; }
 
 /* settings */
+.settings-dashboard .dashboard-header { max-width: 920px; margin-right: auto; margin-left: auto; }
 .settings-layout-new { max-width: 920px; margin: 16px auto 0; }
 .settings-content { display: flex; flex-direction: column; gap: 18px; }
 .settings-section { scroll-margin-top: 24px; padding: 28px 30px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }

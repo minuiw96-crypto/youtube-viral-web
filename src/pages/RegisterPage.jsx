@@ -48,7 +48,6 @@ export default function RegisterPage() {
         <ThemeToggle />
       </div>
       <Logo className="auth-logo" linkTo="/" />
-      <p className="auth-slogan">영상이 뜨기 전에, 먼저 확인하세요</p>
 
       <form className="auth-card" onSubmit={handleSubmit}>
         {error && <div className="form-error">{error}</div>}

@@ -15,6 +15,13 @@ function getSubscriberCount(video) {
     ?? video.channel_data?.subscriber_count
 }
 
+function getCategoryTone(value) {
+  const category = String(value || '').trim().toUpperCase()
+  if (category.includes('MUKBANG')) return 'mukbang'
+  if (category.includes('GAMING')) return 'gaming'
+  return 'default'
+}
+
 function RankBadge({ index }) {
   if (index > 2) return <span className="rank-number">{index + 1}</span>
   return (
@@ -111,7 +118,6 @@ export default function HomePage() {
               <div className="rank-table-head">
                 <div className="rank-table-title">
                   <h2>영상 TOP10</h2>
-                  <p>전체 {videos.length.toLocaleString('ko-KR')}개 중 검색 결과 {filteredVideos.length.toLocaleString('ko-KR')}개 · 상위 {top10.length}개 표시</p>
                 </div>
               </div>
               {top10.length === 0 ? (
@@ -152,7 +158,9 @@ export default function HomePage() {
                             </div>
                           </td>
                           <td>
-                            <span className="category-pill">{formatCategory(video.category)}</span>
+                            <span className={`category-pill category-pill-${getCategoryTone(video.category || video.project_category)}`}>
+                              {formatCategory(video.category || video.project_category)}
+                            </span>
                           </td>
                           <td>
                             <div className="channel-cell">

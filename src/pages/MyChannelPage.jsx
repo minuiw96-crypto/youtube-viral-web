@@ -171,8 +171,38 @@ export default function MyChannelPage({ view = 'benchmark' }) {
     })
   }, [performanceVideos])
 
-  const ownScores = videos.map((video) => number(video.viral_score)).filter((score) => score !== null)
-  const ownAverageScore = ownScores.length ? ownScores.reduce((sum, score) => sum + score, 0) / ownScores.length : null
+  const ownAverageScore = useMemo(() => {
+    const summaryScore = number(
+      summary?.average_score
+      ?? summary?.average_viral_score
+      ?? summary?.avg_viral_score
+      ?? summary?.channel_average_score,
+    )
+    if (summaryScore !== null) return summaryScore
+
+    const scoresByVideo = new Map()
+    videos.forEach((video, index) => {
+      const score = number(video.viral_score)
+      if (score !== null) scoresByVideo.set(video.video_id || video.id || `video-${index}`, score)
+    })
+
+    const ownChannelId = String(summary?.channel_id || '').trim()
+    const ownChannelName = String(summary?.channel_title || summary?.channel_name || '').trim().toLowerCase()
+    ranking.forEach((video, index) => {
+      const rankingChannelId = String(video.channel_id || '').trim()
+      const rankingChannelName = String(video.channel_title || video.channel_name || '').trim().toLowerCase()
+      const isOwnChannel = ownChannelId
+        ? rankingChannelId === ownChannelId
+        : Boolean(ownChannelName && rankingChannelName === ownChannelName)
+      const score = number(video.viral_score)
+      if (isOwnChannel && score !== null) {
+        scoresByVideo.set(video.video_id || video.id || `ranking-${index}`, score)
+      }
+    })
+
+    const scores = [...scoresByVideo.values()]
+    return scores.length ? scores.reduce((sum, score) => sum + score, 0) / scores.length : null
+  }, [ranking, summary, videos])
 
   function scrollBenchmarkChannels(direction) {
     const track = benchmarkTrackRef.current
@@ -272,8 +302,8 @@ export default function MyChannelPage({ view = 'benchmark' }) {
               <div className="panel-heading"><div><h2>영상 성과 분포</h2><p>조회수 대비 좋아요와 댓글의 참여율을 비교합니다.</p></div></div>
               {chartPoints.length ? (
                 <div className="bubble-chart" aria-label="조회수와 참여율 기준 영상 성과 분포 차트">
-                  <span className="axis-label axis-y">참여율</span>
-                  <span className="axis-label axis-x">조회수</span>
+                  <span className="axis-label axis-y">참여율 ↑</span>
+                  <span className="axis-label axis-x">조회수 →</span>
                   <span className="chart-zone-label">반응과 확장성이 높은 영역</span>
                   {chartPoints.map(({ video, x, y, size }, index) => (
                     <button
