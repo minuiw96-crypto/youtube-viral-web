@@ -91,8 +91,13 @@ export default function PredictPage() {
         <section className="predict-studio">
           <div className={`predict-workbench ${result ? 'has-result' : ''} ${loading ? 'is-loading' : ''}`}>
             {!result && !loading && (
-              <>
+              <div className="predict-entry-layout">
                 <form className="predict-form-new" onSubmit={handleSubmit}>
+                  <div className="predict-form-heading">
+                    <span>새 분석</span>
+                    <h2>분석할 영상을 입력하세요</h2>
+                    <p>카테고리와 공개 YouTube 영상 주소가 필요합니다.</p>
+                  </div>
                   <div className="predict-category-field">
                     <label htmlFor="prediction-category">영상 카테고리</label>
                     <select id="prediction-category" value={category} onChange={(event) => setCategory(event.target.value)}>
@@ -108,8 +113,20 @@ export default function PredictPage() {
                   {error && <p className="predict-error">{error}</p>}
                   <p className="input-note">공개 상태인 YouTube 영상 주소를 입력해 주세요.</p>
                 </form>
-                <div className="predict-empty-visual"><OrbitVisual /><p>URL을 입력하면 분석 결과가 여기에 표시됩니다.</p></div>
-              </>
+                <aside className="predict-guide-panel">
+                  <span className="predict-guide-eyebrow">분석 결과</span>
+                  <h2>영상의 바이럴 가능성을 한눈에 확인합니다.</h2>
+                  <div className="predict-guide-items">
+                    <div><b>01</b><span><strong>영상 제목</strong><small>YouTube에 표시되는 제목</small></span></div>
+                    <div><b>02</b><span><strong>카테고리</strong><small>선택한 분석 기준</small></span></div>
+                    <div><b>03</b><span><strong>바이럴 스코어</strong><small>100점 기준의 5단계 결과</small></span></div>
+                  </div>
+                  <div className="predict-guide-scale" aria-label="바이럴 스코어 5단계">
+                    <i /><i /><i /><i /><i />
+                  </div>
+                  <div className="predict-guide-scale-labels"><span>매우 낮음</span><span>매우 높음</span></div>
+                </aside>
+              </div>
             )}
 
             {loading && <div className="predict-empty-visual predict-loading-visual"><OrbitVisual loading /><p>영상 신호를 분석하고 있습니다.</p></div>}

@@ -64,11 +64,11 @@ export default function SettingsPage() {
     <div className="dashboard-shell">
       <Sidebar />
       <main className="dashboard-main dashboard-page settings-dashboard">
-        <DashboardHeader title="설정" description="계정 정보와 화면 환경을 관리합니다." />
+        <DashboardHeader title="설정" />
         <div className="settings-layout-new">
           <div className="settings-content">
             <section className="settings-section" id="account">
-              <div className="settings-section-heading"><div><h2>계정 정보</h2><p>가입된 계정과 연결 채널을 확인합니다.</p></div></div>
+              <div className="settings-section-heading"><div><h2>계정 정보</h2></div></div>
               <div className="account-summary">
                 <span className="settings-avatar">{(user?.name || user?.email || 'P').slice(0, 1).toUpperCase()}</span>
                 <div><strong>{loading ? '계정 확인 중' : user?.name || 'PredicTube 회원'}</strong><span>{user?.email || '-'}</span></div>
@@ -94,12 +94,12 @@ export default function SettingsPage() {
             </section>
 
             <section className="settings-section" id="appearance">
-              <div className="settings-section-heading"><div><h2>화면 설정</h2><p>분석 화면에 사용할 색상 모드를 선택합니다.</p></div></div>
+              <div className="settings-section-heading"><div><h2>화면 설정</h2></div></div>
               <div className="settings-action-row"><div><strong>라이트 / 다크 모드</strong><span>현재 모드에서 반대 모드로 전환합니다.</span></div><ThemeToggle /></div>
             </section>
 
             <section className="settings-section danger-section" id="withdrawal">
-              <div className="settings-section-heading"><div><h2>회원 탈퇴</h2><p>계정과 연결된 채널 정보를 영구적으로 삭제합니다.</p></div></div>
+              <div className="settings-section-heading"><div><h2>회원 탈퇴</h2></div></div>
               <div className="settings-action-row"><div><strong>PredicTube 계정 삭제</strong><span>탈퇴 후에는 계정 정보를 복구할 수 없습니다.</span></div><button type="button" className="danger-button" onClick={withdraw} disabled={deleting}>{deleting ? '처리 중' : '회원 탈퇴'}</button></div>
               {deleteMessage && <p className="settings-feedback danger-feedback">{deleteMessage}</p>}
             </section>
