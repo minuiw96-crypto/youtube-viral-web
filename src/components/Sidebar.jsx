@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
 import ThemeToggle from './ThemeToggle'
-import { clearAccessToken } from '../api/client'
+import { clearAccessToken, getCurrentUser } from '../api/client'
 
 const COLLAPSE_KEY = 'predictube_sidebar_collapsed'
 
@@ -53,8 +53,17 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_KEY) === '1')
+  const [user, setUser] = useState(null)
   const location = useLocation()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    let active = true
+    getCurrentUser().then((data) => {
+      if (active) setUser(data.user || data)
+    }).catch(() => {})
+    return () => { active = false }
+  }, [])
 
   function toggleCollapsed() {
     setCollapsed((v) => {
@@ -72,7 +81,7 @@ export default function Sidebar() {
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-top">
-        <Logo className="sidebar-logo" linkTo="/" />
+        <Logo className="sidebar-logo" linkTo="/home" />
         <button
           type="button"
           className="sidebar-collapse-btn"
@@ -85,7 +94,16 @@ export default function Sidebar() {
         </button>
       </div>
 
+      <div className="sidebar-workspace">
+        <span className="workspace-mark">P</span>
+        <div className="sidebar-link-label">
+          <strong>PredicTube</strong>
+          <small>Creator analytics</small>
+        </div>
+      </div>
+
       <nav className="sidebar-nav">
+        <span className="sidebar-section-label sidebar-link-label">WORKSPACE</span>
         {NAV_ITEMS.map((item) => (
           <Link
             key={item.to}
@@ -99,15 +117,24 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar-bottom">
-        <ThemeToggle />
-        <button type="button" className="sidebar-logout" onClick={handleLogout}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <path d="M16 17l5-5-5-5" />
-            <path d="M21 12H9" />
-          </svg>
-          <span className="sidebar-link-label">로그아웃</span>
-        </button>
+        <div className="sidebar-profile">
+          <span className="sidebar-avatar">{(user?.name || user?.email || 'P').slice(0, 1).toUpperCase()}</span>
+          <div className="sidebar-profile-copy sidebar-link-label">
+            <strong>{user?.name || '내 계정'}</strong>
+            <small>{user?.email || 'PredicTube member'}</small>
+          </div>
+        </div>
+        <div className="sidebar-utility-row">
+          <ThemeToggle />
+          <button type="button" className="sidebar-logout" onClick={handleLogout}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <path d="M16 17l5-5-5-5" />
+              <path d="M21 12H9" />
+            </svg>
+            <span className="sidebar-link-label">로그아웃</span>
+          </button>
+        </div>
       </div>
     </aside>
   )

@@ -1,170 +1,196 @@
 import { useEffect, useMemo, useState } from 'react'
 import Sidebar from '../components/Sidebar'
+import DashboardHeader from '../components/DashboardHeader'
 import ScoreGauge from '../components/ScoreGauge'
-import { getChannelVideos } from '../api/client'
+import { getChannelSummary, getChannelVideos, getVideoRanking } from '../api/client'
 import { formatCategory } from '../utils/categoryLabels'
 
-const SUBSCRIBER_TIERS = [
-  {
-    label: '1천 ~ 1만',
-    channels: [
-      { name: '예시채널 A', subscribers: '5천' },
-      { name: '예시채널 B', subscribers: '8천' },
-    ],
-  },
-  {
-    label: '1만 ~ 10만',
-    channels: [
-      { name: '예시채널 C', subscribers: '4만' },
-      { name: '예시채널 D', subscribers: '7만' },
-    ],
-  },
-  {
-    label: '10만 ~ 50만',
-    channels: [
-      { name: '예시채널 E', subscribers: '20만' },
-      { name: '예시채널 F', subscribers: '35만' },
-    ],
-  },
-  {
-    label: '50만 ~ 100만',
-    channels: [
-      { name: '예시채널 G', subscribers: '60만' },
-      { name: '예시채널 H', subscribers: '90만' },
-    ],
-  },
-  {
-    label: '100만+',
-    channels: [
-      { name: '예시채널 I', subscribers: '150만' },
-      { name: '예시채널 J', subscribers: '300만' },
-    ],
-  },
+const TIERS = [
+  { key: 'tier1', label: '1천~1만', min: 1000, max: 9999 },
+  { key: 'tier2', label: '1만~10만', min: 10000, max: 99999 },
+  { key: 'tier3', label: '10만~50만', min: 100000, max: 499999 },
+  { key: 'tier4', label: '50만~100만', min: 500000, max: 999999 },
+  { key: 'tier5', label: '100만+', min: 1000000, max: Infinity },
 ]
 
-function formatNumber(n) {
-  const num = typeof n === 'string' ? Number(n) : n
-  return typeof num === 'number' && Number.isFinite(num) ? num.toLocaleString('ko-KR') : '-'
+function number(value) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+function compact(value) {
+  const parsed = number(value)
+  if (parsed === null) return '-'
+  return new Intl.NumberFormat('ko-KR', { notation: 'compact', maximumFractionDigits: 1 }).format(parsed)
+}
+
+function pct(value) {
+  const parsed = number(value)
+  return parsed === null ? '-' : `${parsed > 0 ? '+' : ''}${parsed.toFixed(1)}%`
 }
 
 export default function MyChannelPage() {
-  const [videos, setVideos] = useState(null)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [view, setView] = useState('benchmark')
+  const [summary, setSummary] = useState(null)
+  const [videos, setVideos] = useState([])
+  const [ranking, setRanking] = useState([])
+  const [tier, setTier] = useState('tier3')
   const [selectedId, setSelectedId] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    let cancelled = false
-    getChannelVideos()
-      .then((data) => {
-        if (!cancelled) setVideos(data.videos || data.video_list || [])
+    let active = true
+    Promise.all([getChannelSummary(), getChannelVideos(), getVideoRanking()])
+      .then(([summaryData, videoData, rankData]) => {
+        if (!active) return
+        setSummary(summaryData.summary || summaryData.channel || summaryData)
+        setVideos(videoData.videos || videoData.video_list || [])
+        setRanking(rankData.video_ranking || [])
       })
-      .catch((err) => {
-        if (!cancelled) setError(err.message || '채널 영상을 불러오지 못했습니다.')
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
+      .catch((err) => active && setError(err.message || '채널 데이터를 불러오지 못했습니다.'))
+      .finally(() => active && setLoading(false))
+    return () => { active = false }
   }, [])
 
-  const sorted = useMemo(() => {
-    if (!videos) return []
-    return videos.slice().sort((a, b) => (b.viral_score ?? -Infinity) - (a.viral_score ?? -Infinity))
-  }, [videos])
+  const category = videos.find((video) => video.category)?.category || summary?.category
+  const categoryLabel = category ? formatCategory(category) : '전체 카테고리'
 
-  const selected = useMemo(() => {
-    if (sorted.length === 0) return null
-    return sorted.find((v) => (v.video_id || v.id) === selectedId) || sorted[0]
-  }, [sorted, selectedId])
+  const categoryRanking = useMemo(() => {
+    const filtered = category ? ranking.filter((item) => item.category === category) : ranking
+    return filtered.length ? filtered : ranking
+  }, [ranking, category])
+
+  const channels = useMemo(() => {
+    const map = new Map()
+    categoryRanking.forEach((item) => {
+      if (!item.channel_id) return
+      const existing = map.get(item.channel_id) || {
+        id: item.channel_id,
+        name: item.channel_title || item.channel_name || '채널명 없음',
+        thumbnail: item.channel_thumbnail_url,
+        subscribers: number(item.subscriber_count),
+        scores: [],
+      }
+      const score = number(item.viral_score)
+      if (score !== null) existing.scores.push(score)
+      map.set(item.channel_id, existing)
+    })
+    return [...map.values()].map((item) => ({
+      ...item,
+      score: item.scores.length ? item.scores.reduce((a, b) => a + b, 0) / item.scores.length : null,
+    }))
+  }, [categoryRanking])
+
+  const tierChannels = useMemo(() => {
+    const current = TIERS.find((item) => item.key === tier)
+    return channels.filter((item) => item.subscribers !== null && item.subscribers >= current.min && item.subscribers <= current.max)
+  }, [channels, tier])
+
+  const topVideos = useMemo(() => videos.slice().sort((a, b) => (number(b.viral_score) ?? -1) - (number(a.viral_score) ?? -1)), [videos])
+  const selectedVideo = topVideos.find((video) => (video.video_id || video.id) === selectedId) || topVideos[0]
+  const best = topVideos[0]
 
   return (
     <div className="dashboard-shell">
       <Sidebar />
-      <div className="dashboard-main">
-        <div className="container">
-          <div className="channel-tier-card">
-            <div className="channel-tier-head">
-              <h2>구독자 수 분류별 모니터링 채널 추천</h2>
-              <span className="channel-tier-caption">예시 데이터입니다.</span>
-            </div>
-            <div className="channel-tier-grid">
-              {SUBSCRIBER_TIERS.map((tier) => (
-                <div className="channel-tier-col" key={tier.label}>
-                  <span className="channel-tier-label">{tier.label}</span>
-                  {tier.channels.map((ch) => (
-                    <div className="similar-channel" key={ch.name}>
-                      <span className="channel-avatar-placeholder" />
-                      <div className="channel-tier-info">
-                        <span>{ch.name}</span>
-                        <span className="channel-tier-subs">구독자 {ch.subscribers}</span>
-                      </div>
-                    </div>
+      <main className="dashboard-main dashboard-page">
+        <DashboardHeader
+          eyebrow="CHANNEL INTELLIGENCE"
+          title="내 채널 리포트"
+          description={`${categoryLabel} 시장 안에서 내 채널의 위치와 영상 성과를 확인하세요.`}
+          actions={<span className="data-freshness"><i />실시간 데이터</span>}
+        />
+
+        <div className="report-tabs" role="tablist" aria-label="채널 리포트 보기">
+          <button type="button" className={view === 'benchmark' ? 'active' : ''} onClick={() => setView('benchmark')}>채널 벤치마크</button>
+          <button type="button" className={view === 'performance' ? 'active' : ''} onClick={() => setView('performance')}>영상 성과 분석</button>
+        </div>
+
+        {loading && <div className="panel-state"><span className="loading-spinner" />채널 데이터를 불러오는 중입니다.</div>}
+        {!loading && error && <div className="panel-state error-state">{error}</div>}
+
+        {!loading && !error && view === 'benchmark' && (
+          <>
+            <section className="channel-hero-card">
+              <div className="channel-identity">
+                {summary?.thumbnail_url || summary?.channel_thumbnail_url ? (
+                  <img src={summary.thumbnail_url || summary.channel_thumbnail_url} alt="" />
+                ) : <span className="channel-avatar-fallback">P</span>}
+                <div>
+                  <span className="section-kicker">MY CHANNEL</span>
+                  <h2>{summary?.channel_title || summary?.title || summary?.channel_name || '내 YouTube 채널'}</h2>
+                  <p>{categoryLabel}</p>
+                </div>
+              </div>
+              <div className="channel-kpis">
+                <div><span>구독자</span><strong>{compact(summary?.subscriber_count)}</strong></div>
+                <div><span>누적 조회수</span><strong>{compact(summary?.view_count || summary?.total_view_count)}</strong></div>
+                <div><span>평균 스코어</span><strong>{best && number(best.viral_score) !== null ? number(best.viral_score).toFixed(1) : '-'}</strong></div>
+              </div>
+            </section>
+
+            <section className="report-panel">
+              <div className="panel-heading">
+                <div><span className="section-kicker">BENCHMARK</span><h2>구독자 규모별 비교 채널</h2></div>
+                <p>{categoryLabel === '전체 카테고리' ? categoryLabel : `${categoryLabel} 카테고리`}</p>
+              </div>
+              <div className="tier-tabs">
+                {TIERS.map((item) => (
+                  <button key={item.key} type="button" className={tier === item.key ? 'active' : ''} onClick={() => setTier(item.key)}>{item.label}</button>
+                ))}
+              </div>
+              {tierChannels.length ? (
+                <div className="benchmark-grid">
+                  {tierChannels.slice(0, 5).map((item, index) => (
+                    <article className="benchmark-card" key={item.id}>
+                      <span className="benchmark-rank">{String(index + 1).padStart(2, '0')}</span>
+                      {item.thumbnail ? <img src={item.thumbnail} alt="" /> : <span className="channel-avatar-fallback">{item.name.slice(0, 1)}</span>}
+                      <div><h3>{item.name}</h3><p>구독자 {compact(item.subscribers)}</p></div>
+                      <strong>{item.score === null ? '-' : item.score.toFixed(1)}</strong>
+                    </article>
                   ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              ) : <div className="compact-empty">현재 수집된 랭킹에는 이 구간의 비교 채널이 없습니다.</div>}
+            </section>
+          </>
+        )}
 
-          <div className="my-video-card">
-            <div className="my-video-head">
-              <h2>내 영상 목록</h2>
-              <span className="channel-tier-caption">스코어가 높은 순으로 정렬됩니다.</span>
-            </div>
-
-            {loading && <p className="dashboard-status">영상을 불러오는 중...</p>}
-            {!loading && error && <div className="form-error dashboard-status">{error}</div>}
-            {!loading && !error && sorted.length === 0 && (
-              <p className="dashboard-status">아직 표시할 영상이 없습니다.</p>
-            )}
-
-            {!loading && !error && sorted.length > 0 && (
-              <div className="my-video-layout">
-                <div className="my-video-list">
-                  {sorted.map((v, i) => {
-                    const id = v.video_id || v.id || i
-                    const active = selected && (selected.video_id || selected.id || sorted.indexOf(selected)) === id
-                    return (
-                      <button
-                        type="button"
-                        key={id}
-                        className={`my-video-row ${active ? 'active' : ''}`}
-                        onClick={() => setSelectedId(id)}
-                      >
-                        {v.thumbnail_url && <img src={v.thumbnail_url} alt="" className="rank-thumb" />}
-                        <span className="my-video-row-title">{v.title || '제목 없음'}</span>
-                        <span className="my-video-row-score">
-                          {typeof v.viral_score === 'number' ? v.viral_score.toFixed(1) : '-'}
-                        </span>
-                      </button>
-                    )
+        {!loading && !error && view === 'performance' && (
+          <div className="performance-layout">
+            <section className="report-panel performance-map-card">
+              <div className="panel-heading"><div><span className="section-kicker">VIDEO MAP</span><h2>영상 성과 분포</h2></div><p>조회수 대비 바이럴 스코어</p></div>
+              {topVideos.length ? (
+                <div className="bubble-chart" aria-label="영상 성과 분포 차트">
+                  <span className="axis-label axis-y">바이럴 스코어</span>
+                  <span className="axis-label axis-x">조회수</span>
+                  {topVideos.slice(0, 8).map((video, index) => {
+                    const score = Math.max(8, Math.min(96, number(video.viral_score) ?? 10))
+                    const views = Math.max(8, Math.min(92, Math.log10(Math.max(10, number(video.view_count) ?? 10)) * 15))
+                    return <button key={video.video_id || index} type="button" className={`video-bubble ${selectedVideo === video ? 'active' : ''}`} style={{ left: `${views}%`, bottom: `${score}%`, '--bubble-size': `${34 + Math.min(score, 80) / 2}px` }} onClick={() => setSelectedId(video.video_id || video.id)} aria-label={video.title || `영상 ${index + 1}`} />
                   })}
                 </div>
+              ) : <div className="compact-empty">분석할 영상 데이터가 없습니다.</div>}
+            </section>
 
-                {selected && (
-                  <div className="video-detail-head my-video-detail">
-                    {selected.thumbnail_url && (
-                      <img src={selected.thumbnail_url} alt="" className="video-detail-thumb" />
-                    )}
-                    <div className="video-detail-meta">
-                      {selected.category && (
-                        <span className="category-pill">{formatCategory(selected.category)}</span>
-                      )}
-                      <h2>{selected.title || '제목 없음'}</h2>
-                      <ScoreGauge score={selected.viral_score} />
-                      {typeof selected.view_count === 'number' && (
-                        <span className="dashboard-status">조회수 {formatNumber(selected.view_count)}회</span>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+            <aside className="report-panel video-insight-panel">
+              <span className="section-kicker">SELECTED VIDEO</span>
+              {selectedVideo ? (
+                <>
+                  {selectedVideo.thumbnail_url && <img className="insight-thumbnail" src={selectedVideo.thumbnail_url} alt="" />}
+                  <h2>{selectedVideo.title || '제목 없음'}</h2>
+                  <ScoreGauge score={number(selectedVideo.viral_score)} />
+                  <dl>
+                    <div><dt>조회수</dt><dd>{compact(selectedVideo.view_count)}</dd></div>
+                    <div><dt>평균 대비 성과</dt><dd>{pct(selectedVideo.performance_multiplier ? (number(selectedVideo.performance_multiplier) - 1) * 100 : null)}</dd></div>
+                    <div><dt>카테고리</dt><dd>{formatCategory(selectedVideo.category)}</dd></div>
+                  </dl>
+                </>
+              ) : <div className="compact-empty">선택할 영상이 없습니다.</div>}
+            </aside>
           </div>
-        </div>
-      </div>
+        )}
+      </main>
     </div>
   )
 }
