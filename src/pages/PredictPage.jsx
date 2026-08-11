@@ -4,6 +4,11 @@ import DashboardHeader from '../components/DashboardHeader'
 import ScoreGauge from '../components/ScoreGauge'
 import { predictFromUrl } from '../api/client'
 
+const PREDICTION_CATEGORIES = [
+  { value: 'KR_MUKBANG', label: '먹방' },
+  { value: 'KR_GAMING', label: '게임' },
+]
+
 function valueOf(result, ...keys) {
   for (const key of keys) if (result?.[key] !== undefined && result?.[key] !== null) return result[key]
   return null
@@ -11,6 +16,7 @@ function valueOf(result, ...keys) {
 
 export default function PredictPage() {
   const [url, setUrl] = useState('')
+  const [category, setCategory] = useState(PREDICTION_CATEGORIES[0].value)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -20,7 +26,9 @@ export default function PredictPage() {
     if (!url.trim()) return
     setLoading(true)
     setError('')
-    try { setResult(await predictFromUrl(url.trim())) }
+    try {
+      setResult(await predictFromUrl(url.trim(), category))
+    }
     catch (err) { setError(err.message || '예측에 실패했습니다.') }
     finally { setLoading(false) }
   }
@@ -46,6 +54,17 @@ export default function PredictPage() {
 
           <div className="predict-workbench">
             <form className="predict-form-new" onSubmit={handleSubmit}>
+              <fieldset className="predict-category-field">
+                <legend>영상 카테고리</legend>
+                <div className="predict-category-options">
+                  {PREDICTION_CATEGORIES.map((item) => (
+                    <label key={item.value} className={category === item.value ? 'active' : ''}>
+                      <input type="radio" name="prediction-category" value={item.value} checked={category === item.value} onChange={(event) => setCategory(event.target.value)} />
+                      <span>{item.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
               <label htmlFor="predict-url">YouTube 영상 URL</label>
               <div className="predict-input-new">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg>

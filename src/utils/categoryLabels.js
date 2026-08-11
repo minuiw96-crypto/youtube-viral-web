@@ -14,8 +14,5 @@ export function formatCategory(raw) {
   if (!raw) return '-'
   const key = raw.toUpperCase().replace(/^[A-Z]{2}_/, '')
   if (CATEGORY_LABELS[key]) return CATEGORY_LABELS[key]
-  return key
-    .split('_')
-    .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
-    .join(' ')
+  return '기타'
 }
