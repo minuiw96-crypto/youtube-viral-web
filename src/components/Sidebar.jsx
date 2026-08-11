@@ -18,12 +18,12 @@ const NAV_ITEMS = [
     ),
   },
   {
-    to: '/video-detail',
-    label: '영상 상세',
+    to: '/my-channel',
+    label: '내 채널',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M10 8.5 15.5 12 10 15.5V8.5Z" fill="currentColor" stroke="none" />
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6" />
       </svg>
     ),
   },

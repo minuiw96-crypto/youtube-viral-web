@@ -8,7 +8,7 @@ import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import HomePage from './pages/HomePage'
-import VideoDetailPage from './pages/VideoDetailPage'
+import MyChannelPage from './pages/MyChannelPage'
 import PredictPage from './pages/PredictPage'
 import SettingsPage from './pages/SettingsPage'
 
@@ -28,10 +28,10 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/video-detail',
+        path: '/my-channel',
         element: (
           <RequireAuth>
-            <VideoDetailPage />
+            <MyChannelPage />
           </RequireAuth>
         ),
       },
