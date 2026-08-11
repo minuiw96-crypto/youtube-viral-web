@@ -14,6 +14,7 @@ const TIERS = [
 ]
 
 function number(value) {
+  if (value === null || value === undefined || value === '') return null
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : null
 }
@@ -24,9 +25,28 @@ function compact(value) {
   return new Intl.NumberFormat('ko-KR', { notation: 'compact', maximumFractionDigits: 1 }).format(parsed)
 }
 
-function pct(value) {
+function percent(value) {
   const parsed = number(value)
-  return parsed === null ? '-' : `${parsed > 0 ? '+' : ''}${parsed.toFixed(1)}%`
+  return parsed === null ? '-' : `${parsed.toFixed(2)}%`
+}
+
+function categoryKey(value) {
+  return String(value || '').trim().toUpperCase().replace(/^[A-Z]{2}_/, '')
+}
+
+function videoEngagement(video) {
+  const provided = number(video.engagement_rate)
+  if (provided !== null) return provided
+  const views = number(video.view_count)
+  const likes = number(video.like_count)
+  const comments = number(video.comment_count)
+  if (!views || likes === null || comments === null) return null
+  return ((likes + comments) / views) * 100
+}
+
+function ChannelAvatar({ channel, className = '' }) {
+  if (channel?.thumbnail) return <img className={className} src={channel.thumbnail} alt="" />
+  return <span className={`channel-avatar-fallback ${className}`.trim()}>{channel?.name?.slice(0, 1) || 'P'}</span>
 }
 
 export default function MyChannelPage({ view = 'benchmark' }) {
@@ -34,7 +54,8 @@ export default function MyChannelPage({ view = 'benchmark' }) {
   const [videos, setVideos] = useState([])
   const [ranking, setRanking] = useState([])
   const [tier, setTier] = useState('tier3')
-  const [selectedId, setSelectedId] = useState(null)
+  const [selectedChannelId, setSelectedChannelId] = useState(null)
+  const [selectedVideoId, setSelectedVideoId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -43,7 +64,11 @@ export default function MyChannelPage({ view = 'benchmark' }) {
     Promise.all([getChannelSummary(), getChannelVideos(), getVideoRanking()])
       .then(([summaryData, videoData, rankData]) => {
         if (!active) return
-        setSummary(summaryData.summary || summaryData.channel || summaryData)
+        const nextSummary = summaryData.summary || summaryData.channel || summaryData
+        const subscribers = number(nextSummary?.subscriber_count)
+        const currentTier = TIERS.find((item) => subscribers !== null && subscribers >= item.min && subscribers <= item.max)
+        setSummary(nextSummary)
+        if (currentTier) setTier(currentTier.key)
         setVideos(videoData.videos || videoData.video_list || [])
         setRanking(rankData.video_ranking || [])
       })
@@ -52,53 +77,89 @@ export default function MyChannelPage({ view = 'benchmark' }) {
     return () => { active = false }
   }, [])
 
-  const category = videos.find((video) => video.category)?.category || summary?.category
-  const categoryLabel = category ? formatCategory(category) : '전체 카테고리'
+  const projectCategory = summary?.project_category
+    || videos.find((video) => video.project_category || video.content_domain)?.project_category
+    || videos.find((video) => video.content_domain)?.content_domain
+  const categoryLabel = formatCategory(projectCategory)
 
   const categoryRanking = useMemo(() => {
-    const filtered = category ? ranking.filter((item) => item.category === category) : ranking
-    return filtered.length ? filtered : ranking
-  }, [ranking, category])
+    if (!projectCategory) return []
+    return ranking.filter((item) => categoryKey(item.category || item.project_category) === categoryKey(projectCategory))
+  }, [ranking, projectCategory])
 
   const channels = useMemo(() => {
     const map = new Map()
     categoryRanking.forEach((item) => {
       if (!item.channel_id) return
+      const score = number(item.viral_score)
       const existing = map.get(item.channel_id) || {
         id: item.channel_id,
         name: item.channel_title || item.channel_name || '채널명 없음',
         thumbnail: item.channel_thumbnail_url,
         subscribers: number(item.subscriber_count),
         scores: [],
+        topVideo: null,
       }
-      const score = number(item.viral_score)
-      if (score !== null) existing.scores.push(score)
+      if (score !== null) {
+        existing.scores.push(score)
+        if (!existing.topVideo || score > number(existing.topVideo.viral_score)) existing.topVideo = item
+      }
+      if (existing.subscribers === null) existing.subscribers = number(item.subscriber_count)
       map.set(item.channel_id, existing)
     })
     return [...map.values()].map((item) => ({
       ...item,
-      score: item.scores.length ? item.scores.reduce((a, b) => a + b, 0) / item.scores.length : null,
+      averageScore: item.scores.length ? item.scores.reduce((sum, score) => sum + score, 0) / item.scores.length : null,
     }))
   }, [categoryRanking])
 
   const tierChannels = useMemo(() => {
-    const current = TIERS.find((item) => item.key === tier)
-    return channels.filter((item) => item.subscribers !== null && item.subscribers >= current.min && item.subscribers <= current.max)
-  }, [channels, tier])
+    const current = TIERS.find((item) => item.key === tier) || TIERS[0]
+    return channels
+      .filter((item) => item.id !== summary?.channel_id && item.subscribers !== null && item.subscribers >= current.min && item.subscribers <= current.max)
+      .sort((a, b) => (b.averageScore ?? -1) - (a.averageScore ?? -1) || (b.subscribers ?? 0) - (a.subscribers ?? 0))
+      .slice(0, 5)
+  }, [channels, summary?.channel_id, tier])
 
-  const topVideos = useMemo(() => videos.slice().sort((a, b) => (number(b.viral_score) ?? -1) - (number(a.viral_score) ?? -1)), [videos])
-  const selectedVideo = topVideos.find((video) => (video.video_id || video.id) === selectedId) || topVideos[0]
-  const best = topVideos[0]
+  const topChannels = useMemo(() => channels
+    .filter((item) => item.averageScore !== null)
+    .sort((a, b) => b.averageScore - a.averageScore)
+    .slice(0, 3), [channels])
+  const selectedChannel = topChannels.find((item) => item.id === selectedChannelId) || topChannels[0]
+
+  const performanceVideos = useMemo(() => videos
+    .map((video) => ({ ...video, engagement: videoEngagement(video) }))
+    .filter((video) => number(video.view_count) !== null && video.engagement !== null)
+    .sort((a, b) => (number(b.view_count) ?? 0) - (number(a.view_count) ?? 0))
+    .slice(0, 20), [videos])
+  const selectedVideo = performanceVideos.find((video) => (video.video_id || video.id) === selectedVideoId) || performanceVideos[0]
+
+  const chartPoints = useMemo(() => {
+    if (!performanceVideos.length) return []
+    const logs = performanceVideos.map((video) => Math.log10(Math.max(1, number(video.view_count))))
+    const minLog = Math.min(...logs)
+    const maxLog = Math.max(...logs)
+    const maxEngagement = Math.max(1, ...performanceVideos.map((video) => video.engagement))
+    return performanceVideos.map((video, index) => {
+      const x = 8 + ((logs[index] - minLog) / (maxLog - minLog || 1)) * 84
+      const y = 8 + (video.engagement / maxEngagement) * 84
+      const score = number(video.viral_score)
+      return { video, x, y, size: 24 + Math.min(18, (score ?? 30) / 5) }
+    })
+  }, [performanceVideos])
+
+  const ownScores = videos.map((video) => number(video.viral_score)).filter((score) => score !== null)
+  const ownAverageScore = ownScores.length ? ownScores.reduce((sum, score) => sum + score, 0) / ownScores.length : null
 
   return (
     <div className="dashboard-shell">
       <Sidebar />
       <main className="dashboard-main dashboard-page">
         <DashboardHeader
-          title={view === 'performance' ? '영상 성과 분석' : '채널 벤치마크'}
+          title={view === 'performance' ? '영상 성과 분석' : `${categoryLabel === '-' ? '내 카테고리' : categoryLabel} 유튜브`}
           description={view === 'performance'
-            ? '내 영상의 조회수와 바이럴 스코어 분포를 확인하세요.'
-            : `${categoryLabel} 시장 안에서 내 채널의 위치를 확인하세요.`}
+            ? '조회수와 참여율을 기준으로 내 영상의 성과 위치를 확인하세요.'
+            : `${categoryLabel === '-' ? '연결 채널' : categoryLabel} 카테고리의 추천 채널과 평균 점수를 비교합니다.`}
         />
 
         {loading && <div className="panel-state"><span className="loading-spinner" />채널 데이터를 불러오는 중입니다.</div>}
@@ -108,44 +169,71 @@ export default function MyChannelPage({ view = 'benchmark' }) {
           <>
             <section className="channel-hero-card">
               <div className="channel-identity">
-                {summary?.thumbnail_url || summary?.channel_thumbnail_url ? (
-                  <img src={summary.thumbnail_url || summary.channel_thumbnail_url} alt="" />
-                ) : <span className="channel-avatar-fallback">P</span>}
+                {summary?.channel_thumbnail_url ? <img src={summary.channel_thumbnail_url} alt="" /> : <span className="channel-avatar-fallback">P</span>}
                 <div>
-                  <span className="section-kicker">MY CHANNEL</span>
-                  <h2>{summary?.channel_title || summary?.title || summary?.channel_name || '내 YouTube 채널'}</h2>
-                  <p>{categoryLabel}</p>
+                  <h2>{summary?.channel_title || summary?.channel_name || '내 YouTube 채널'}</h2>
+                  <p>{categoryLabel} 카테고리</p>
                 </div>
               </div>
               <div className="channel-kpis">
                 <div><span>구독자</span><strong>{compact(summary?.subscriber_count)}</strong></div>
-                <div><span>누적 조회수</span><strong>{compact(summary?.view_count || summary?.total_view_count)}</strong></div>
-                <div><span>평균 스코어</span><strong>{best && number(best.viral_score) !== null ? number(best.viral_score).toFixed(1) : '-'}</strong></div>
+                <div><span>누적 조회수</span><strong>{compact(summary?.total_view_count)}</strong></div>
+                <div><span>평균 점수</span><strong>{ownAverageScore === null ? '-' : ownAverageScore.toFixed(1)}</strong></div>
               </div>
             </section>
 
-            <section className="report-panel">
+            <section className="report-panel benchmark-section">
               <div className="panel-heading">
-                <div><span className="section-kicker">BENCHMARK</span><h2>구독자 규모별 비교 채널</h2></div>
-                <p>{categoryLabel === '전체 카테고리' ? categoryLabel : `${categoryLabel} 카테고리`}</p>
+                <div><h2>구독자 수 분류별 모니터링 채널 추천</h2><p>내 채널과 비슷한 규모의 {categoryLabel} 채널을 확인해 보세요.</p></div>
               </div>
-              <div className="tier-tabs">
+              <div className="tier-tabs" role="tablist" aria-label="구독자 수 구간">
                 {TIERS.map((item) => (
-                  <button key={item.key} type="button" className={tier === item.key ? 'active' : ''} onClick={() => setTier(item.key)}>{item.label}</button>
+                  <button key={item.key} type="button" role="tab" aria-selected={tier === item.key} className={tier === item.key ? 'active' : ''} onClick={() => setTier(item.key)}>{item.label}</button>
                 ))}
               </div>
               {tierChannels.length ? (
                 <div className="benchmark-grid">
-                  {tierChannels.slice(0, 5).map((item, index) => (
+                  {tierChannels.map((item) => (
                     <article className="benchmark-card" key={item.id}>
-                      <span className="benchmark-rank">{String(index + 1).padStart(2, '0')}</span>
-                      {item.thumbnail ? <img src={item.thumbnail} alt="" /> : <span className="channel-avatar-fallback">{item.name.slice(0, 1)}</span>}
+                      <ChannelAvatar channel={item} />
                       <div><h3>{item.name}</h3><p>구독자 {compact(item.subscribers)}</p></div>
-                      <strong>{item.score === null ? '-' : item.score.toFixed(1)}</strong>
+                      <strong>평균 {item.averageScore === null ? '-' : item.averageScore.toFixed(1)}점</strong>
                     </article>
                   ))}
                 </div>
-              ) : <div className="compact-empty">현재 수집된 랭킹에는 이 구간의 비교 채널이 없습니다.</div>}
+              ) : <div className="compact-empty">이 구독자 구간에 추천할 {categoryLabel} 채널이 없습니다.</div>}
+            </section>
+
+            <section className="report-panel top-channel-section">
+              <div className="panel-heading">
+                <div><h2>평균 점수 높은 채널</h2><p>{categoryLabel} 카테고리에서 평균 바이럴 점수가 높은 TOP 3입니다.</p></div>
+              </div>
+              {topChannels.length ? (
+                <div className="top-channel-showcase">
+                  <div className="top-channel-list">
+                    {topChannels.map((item, index) => (
+                      <button key={item.id} type="button" className={selectedChannel === item ? 'active' : ''} onClick={() => setSelectedChannelId(item.id)}>
+                        <span className="top-channel-rank">{index + 1}</span>
+                        <ChannelAvatar channel={item} />
+                        <span className="top-channel-copy"><strong>{item.name}</strong><small>구독자 {compact(item.subscribers)}</small></span>
+                        <b>{item.averageScore.toFixed(1)}</b>
+                      </button>
+                    ))}
+                  </div>
+                  <article className="top-video-card">
+                    {selectedChannel?.topVideo?.thumbnail_url ? <img src={selectedChannel.topVideo.thumbnail_url} alt="" /> : <div className="top-video-fallback">영상 미리보기</div>}
+                    <div className="top-video-content">
+                      <div className="top-video-channel"><ChannelAvatar channel={selectedChannel} /><span><strong>{selectedChannel?.name}</strong><small>채널 최고 점수 영상</small></span></div>
+                      <h3>{selectedChannel?.topVideo?.title || '영상 제목 정보가 없습니다.'}</h3>
+                      <dl>
+                        <div><dt>바이럴 점수</dt><dd>{number(selectedChannel?.topVideo?.viral_score)?.toFixed(1) || '-'}</dd></div>
+                        <div><dt>채널 평균 점수</dt><dd>{selectedChannel?.averageScore?.toFixed(1) || '-'}</dd></div>
+                        <div><dt>평균 조회수</dt><dd>{compact(selectedChannel?.topVideo?.avg_view_count)}</dd></div>
+                      </dl>
+                    </div>
+                  </article>
+                </div>
+              ) : <div className="compact-empty">평균 점수를 계산할 {categoryLabel} 채널 데이터가 없습니다.</div>}
             </section>
           </>
         )}
@@ -153,31 +241,40 @@ export default function MyChannelPage({ view = 'benchmark' }) {
         {!loading && !error && view === 'performance' && (
           <div className="performance-layout">
             <section className="report-panel performance-map-card">
-              <div className="panel-heading"><div><span className="section-kicker">VIDEO MAP</span><h2>영상 성과 분포</h2></div><p>조회수 대비 바이럴 스코어</p></div>
-              {topVideos.length ? (
-                <div className="bubble-chart" aria-label="영상 성과 분포 차트">
-                  <span className="axis-label axis-y">바이럴 스코어</span>
+              <div className="panel-heading"><div><h2>영상 성과 분포</h2><p>조회수 대비 좋아요와 댓글의 참여율을 비교합니다.</p></div></div>
+              {chartPoints.length ? (
+                <div className="bubble-chart" aria-label="조회수와 참여율 기준 영상 성과 분포 차트">
+                  <span className="axis-label axis-y">참여율</span>
                   <span className="axis-label axis-x">조회수</span>
-                  {topVideos.slice(0, 8).map((video, index) => {
-                    const score = Math.max(8, Math.min(96, number(video.viral_score) ?? 10))
-                    const views = Math.max(8, Math.min(92, Math.log10(Math.max(10, number(video.view_count) ?? 10)) * 15))
-                    return <button key={video.video_id || index} type="button" className={`video-bubble ${selectedVideo === video ? 'active' : ''}`} style={{ left: `${views}%`, bottom: `${score}%`, '--bubble-size': `${34 + Math.min(score, 80) / 2}px` }} onClick={() => setSelectedId(video.video_id || video.id)} aria-label={video.title || `영상 ${index + 1}`} />
-                  })}
+                  <span className="chart-zone-label">반응과 확장성이 높은 영역</span>
+                  {chartPoints.map(({ video, x, y, size }, index) => (
+                    <button
+                      key={video.video_id || index}
+                      type="button"
+                      className={`video-bubble ${selectedVideo === video ? 'active' : ''}`}
+                      style={{ left: `${x}%`, bottom: `${y}%`, '--bubble-size': `${size}px` }}
+                      onClick={() => setSelectedVideoId(video.video_id || video.id)}
+                      title={`${video.title || `영상 ${index + 1}`} · 조회수 ${compact(video.view_count)} · 참여율 ${percent(video.engagement)}`}
+                      aria-label={video.title || `영상 ${index + 1}`}
+                    />
+                  ))}
                 </div>
-              ) : <div className="compact-empty">분석할 영상 데이터가 없습니다.</div>}
+              ) : <div className="compact-empty">조회수와 참여율을 계산할 영상 데이터가 없습니다.</div>}
             </section>
 
             <aside className="report-panel video-insight-panel">
-              <span className="section-kicker">SELECTED VIDEO</span>
+              <h2>선택 영상 정보</h2>
               {selectedVideo ? (
                 <>
                   {selectedVideo.thumbnail_url && <img className="insight-thumbnail" src={selectedVideo.thumbnail_url} alt="" />}
-                  <h2>{selectedVideo.title || '제목 없음'}</h2>
+                  <h3>{selectedVideo.title || '제목 없음'}</h3>
                   <ScoreGauge score={number(selectedVideo.viral_score)} />
                   <dl>
                     <div><dt>조회수</dt><dd>{compact(selectedVideo.view_count)}</dd></div>
-                    <div><dt>평균 대비 성과</dt><dd>{pct(selectedVideo.performance_multiplier ? (number(selectedVideo.performance_multiplier) - 1) * 100 : null)}</dd></div>
-                    <div><dt>카테고리</dt><dd>{formatCategory(selectedVideo.category)}</dd></div>
+                    <div><dt>좋아요</dt><dd>{compact(selectedVideo.like_count)}</dd></div>
+                    <div><dt>댓글</dt><dd>{compact(selectedVideo.comment_count)}</dd></div>
+                    <div><dt>참여율</dt><dd>{percent(selectedVideo.engagement)}</dd></div>
+                    <div><dt>카테고리</dt><dd>{formatCategory(selectedVideo.content_domain || selectedVideo.project_category || projectCategory)}</dd></div>
                   </dl>
                 </>
               ) : <div className="compact-empty">선택할 영상이 없습니다.</div>}
