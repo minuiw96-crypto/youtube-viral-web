@@ -33,7 +33,8 @@ export default function PredictPage() {
     finally { setLoading(false) }
   }
 
-  const score = Number(valueOf(result, 'viral_score', 'score', 'prediction_score'))
+  const rawScore = valueOf(result, 'predicted_score', 'viral_score', 'score', 'prediction_score')
+  const score = rawScore === null ? null : Number(rawScore)
   const validScore = Number.isFinite(score) ? score : null
 
   return (
@@ -43,28 +44,14 @@ export default function PredictPage() {
         <DashboardHeader title="바이럴 가능성 예측" description="YouTube 영상 URL 하나로 확산 가능성과 핵심 신호를 분석합니다." />
 
         <section className="predict-studio">
-          <div className="predict-studio-copy">
-            <span className="section-kicker">PREDICTUBE SCORE</span>
-            <h2>이 영상, 얼마나 멀리 퍼질까요?</h2>
-            <p>영상 주소를 입력하면 학습된 예측 모델이 콘텐츠의 바이럴 가능성을 100점 만점으로 계산합니다.</p>
-            <div className="predict-feature-list">
-              <span><i>01</i>바이럴 스코어</span><span><i>02</i>예측 등급</span><span><i>03</i>핵심 성과 신호</span>
-            </div>
-          </div>
-
           <div className="predict-workbench">
             <form className="predict-form-new" onSubmit={handleSubmit}>
-              <fieldset className="predict-category-field">
-                <legend>영상 카테고리</legend>
-                <div className="predict-category-options">
-                  {PREDICTION_CATEGORIES.map((item) => (
-                    <label key={item.value} className={category === item.value ? 'active' : ''}>
-                      <input type="radio" name="prediction-category" value={item.value} checked={category === item.value} onChange={(event) => setCategory(event.target.value)} />
-                      <span>{item.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
+              <div className="predict-category-field">
+                <label htmlFor="prediction-category">영상 카테고리</label>
+                <select id="prediction-category" value={category} onChange={(event) => setCategory(event.target.value)}>
+                  {PREDICTION_CATEGORIES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                </select>
+              </div>
               <label htmlFor="predict-url">YouTube 영상 URL</label>
               <div className="predict-input-new">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg>
