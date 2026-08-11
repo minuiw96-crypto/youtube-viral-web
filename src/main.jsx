@@ -65,7 +65,23 @@ const router = createBrowserRouter([
         path: '/admin',
         element: (
           <RequireAdmin>
-            <AdminPage />
+            <AdminPage view="overview" />
+          </RequireAdmin>
+        ),
+      },
+      {
+        path: '/admin/pipeline',
+        element: (
+          <RequireAdmin>
+            <AdminPage view="pipeline" />
+          </RequireAdmin>
+        ),
+      },
+      {
+        path: '/admin/model-quality',
+        element: (
+          <RequireAdmin>
+            <AdminPage view="quality" />
           </RequireAdmin>
         ),
       },

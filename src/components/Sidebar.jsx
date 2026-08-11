@@ -56,6 +56,11 @@ const NAV_ITEMS = [
     to: '/admin',
     label: '관리자',
     adminOnly: true,
+    children: [
+      { to: '/admin', label: '운영 개요' },
+      { to: '/admin/pipeline', label: '파이프라인' },
+      { to: '/admin/model-quality', label: '모델 품질' },
+    ],
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M12 3 4.5 6v5.5c0 4.4 3 8.1 7.5 9.5 4.5-1.4 7.5-5.1 7.5-9.5V6L12 3Z" />

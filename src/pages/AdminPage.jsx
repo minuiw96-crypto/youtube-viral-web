@@ -2,28 +2,52 @@ import { useEffect, useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import DashboardHeader from '../components/DashboardHeader'
 import { getAdminOverview } from '../api/client'
-import { formatCategory } from '../utils/categoryLabels'
 
-const KPI_ITEMS = [
-  { key: 'channel_count', label: '수집 채널' },
-  { key: 'video_count', label: '수집 영상' },
-  { key: 'prediction_count', label: '예측 데이터' },
-  { key: 'label_count', label: '평가 라벨' },
-  { key: 'snapshot_count', label: '영상 스냅샷' },
-  { key: 'user_count', label: '가입 계정' },
-]
+const PAGE_TITLES = {
+  overview: '운영 개요',
+  pipeline: '파이프라인',
+  quality: '모델 품질',
+}
+
+function number(value) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
 
 function formatCount(value) {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? parsed.toLocaleString('ko-KR') : '-'
+  const parsed = number(value)
+  return parsed === null ? '-' : Math.round(parsed).toLocaleString('ko-KR')
 }
 
-function formatCoverage(value) {
-  const parsed = Number(value)
-  return Number.isFinite(parsed) ? `${parsed.toFixed(1)}%` : '-'
+function completedCount(total, coverage) {
+  const totalValue = number(total)
+  const coverageValue = number(coverage)
+  if (totalValue === null || coverageValue === null) return null
+  return Math.round(totalValue * coverageValue / 100)
 }
 
-export default function AdminPage() {
+function StageCard({ step, title, value, detail, state = 'waiting' }) {
+  const stateLabel = state === 'ready' ? '데이터 확인' : state === 'warning' ? '누락 확인' : '연결 대기'
+  return (
+    <article className={`admin-stage-card ${state}`}>
+      <div className="admin-stage-heading"><span>{step}</span><b>{stateLabel}</b></div>
+      <h2>{title}</h2>
+      <strong>{formatCount(value)}</strong>
+      <p>{detail}</p>
+    </article>
+  )
+}
+
+function PowerBiPlaceholder({ title }) {
+  return (
+    <section className="admin-powerbi-section">
+      <div className="admin-powerbi-heading"><h2>{title}</h2><span>Power BI 연결 예정</span></div>
+      <div className="admin-powerbi-placeholder" aria-label={`${title} Power BI 삽입 영역`} />
+    </section>
+  )
+}
+
+export default function AdminPage({ view = 'overview' }) {
   const [overview, setOverview] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -37,83 +61,81 @@ export default function AdminPage() {
     return () => { active = false }
   }, [])
 
-  const categories = overview?.categories || []
-  const totalCategoryChannels = categories.reduce((sum, item) => sum + (Number(item.channel_count) || 0), 0)
-  const topVideos = (overview?.video_ranking || []).slice(0, 5)
   const stats = overview?.stats || {}
+  const videoCount = number(stats.video_count)
+  const predictedCount = number(stats.prediction_count) ?? completedCount(videoCount, stats.prediction_coverage)
+  const labeledCount = number(stats.label_count) ?? completedCount(videoCount, stats.label_coverage)
+  const predictionMissing = videoCount === null || predictedCount === null ? null : Math.max(0, videoCount - predictedCount)
+  const labelMissing = videoCount === null || labeledCount === null ? null : Math.max(0, videoCount - labeledCount)
+  const stateForMissing = (value) => value === null ? 'waiting' : value > 0 ? 'warning' : 'ready'
 
   return (
     <div className="dashboard-shell">
       <Sidebar />
       <main className="dashboard-main dashboard-page admin-dashboard">
-        <DashboardHeader title="관리자 대시보드" />
+        <DashboardHeader title={PAGE_TITLES[view] || PAGE_TITLES.overview} />
 
         {loading && <div className="panel-state"><span className="loading-spinner" />운영 현황을 불러오는 중입니다.</div>}
         {!loading && error && <div className="panel-state error-state">{error}</div>}
 
-        {!loading && !error && overview && (
+        {!loading && !error && overview && view === 'overview' && (
           <>
-            <section className="admin-kpi-grid" aria-label="서비스 주요 지표">
-              {KPI_ITEMS.map((item) => (
-                <article className="admin-kpi-card" key={item.key}>
-                  <span>{item.label}</span>
-                  <strong>{formatCount(stats[item.key])}</strong>
-                </article>
-              ))}
+            <section className="admin-pipeline-flow" aria-label="수집, 예측, 평가 처리 현황">
+              <StageCard step="01" title="수집 상태" value={stats.video_count} detail={`스냅샷 ${formatCount(stats.snapshot_count)}개 · 마지막 수집 시각 연결 대기`} state="ready" />
+              <StageCard step="02" title="예측 상태" value={predictedCount} detail={`예측 누락 ${formatCount(predictionMissing)}건 · 마지막 예측 시각 연결 대기`} state={stateForMissing(predictionMissing)} />
+              <StageCard step="03" title="평가 상태" value={labeledCount} detail={`라벨 누락 ${formatCount(labelMissing)}건 · 마지막 평가 시각 연결 대기`} state={stateForMissing(labelMissing)} />
             </section>
 
-            <div className="admin-overview-grid">
-              <section className="report-panel admin-coverage-panel">
-                <div className="panel-heading"><div><h2>데이터 적용률</h2></div></div>
-                <div className="admin-coverage-item">
-                  <div><span>예측 완료 영상</span><strong>{formatCoverage(stats.prediction_coverage)}</strong></div>
-                  <progress max="100" value={Number(stats.prediction_coverage) || 0} />
-                </div>
-                <div className="admin-coverage-item">
-                  <div><span>라벨 확보 영상</span><strong>{formatCoverage(stats.label_coverage)}</strong></div>
-                  <progress max="100" value={Number(stats.label_coverage) || 0} />
-                </div>
-              </section>
-
-              <section className="report-panel admin-category-panel">
-                <div className="panel-heading"><div><h2>채널 카테고리</h2></div></div>
-                <div className="admin-category-list">
-                  {categories.length ? categories.map((item) => {
-                    const count = Number(item.channel_count) || 0
-                    const share = totalCategoryChannels ? (count / totalCategoryChannels) * 100 : 0
-                    return (
-                      <div key={item.name}>
-                        <span>{formatCategory(item.name)}</span>
-                        <div><i style={{ width: `${share}%` }} /></div>
-                        <strong>{formatCount(count)}</strong>
-                      </div>
-                    )
-                  }) : <p className="compact-empty">카테고리 데이터가 없습니다.</p>}
-                </div>
-              </section>
-            </div>
-
-            <section className="report-panel admin-ranking-panel">
-              <div className="panel-heading"><div><h2>상위 바이럴 영상</h2></div></div>
-              {topVideos.length ? (
-                <div className="admin-ranking-table-wrap">
-                  <table className="admin-ranking-table">
-                    <thead><tr><th>순위</th><th>영상</th><th>채널</th><th>카테고리</th><th>점수</th></tr></thead>
-                    <tbody>
-                      {topVideos.map((video, index) => (
-                        <tr key={`${video.video_id}-${index}`}>
-                          <td>{index + 1}</td>
-                          <td><span>{video.title || '제목 없음'}</span></td>
-                          <td>{video.channel_title || '-'}</td>
-                          <td>{formatCategory(video.category)}</td>
-                          <td><strong>{Number.isFinite(Number(video.viral_score)) ? Number(video.viral_score).toFixed(1) : '-'}</strong></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : <div className="compact-empty">표시할 영상 랭킹이 없습니다.</div>}
+            <section className="admin-ops-summary">
+              <div><span>수집 채널</span><strong>{formatCount(stats.channel_count)}</strong></div>
+              <div><span>예측 누락</span><strong>{formatCount(predictionMissing)}</strong></div>
+              <div><span>라벨 누락</span><strong>{formatCount(labelMissing)}</strong></div>
+              <div><span>현재 모델</span><strong className="admin-pending-value">연결 대기</strong></div>
             </section>
+
+            <PowerBiPlaceholder title="전체 운영 현황" />
+          </>
+        )}
+
+        {!loading && !error && overview && view === 'pipeline' && (
+          <>
+            <section className="admin-pipeline-flow" aria-label="파이프라인 단계별 데이터 현황">
+              <StageCard step="01" title="데이터 수집" value={stats.video_count} detail={`채널 ${formatCount(stats.channel_count)}개 · 스냅샷 ${formatCount(stats.snapshot_count)}개`} state="ready" />
+              <StageCard step="02" title="예측 생성" value={predictedCount} detail={`전체 영상 대비 누락 ${formatCount(predictionMissing)}건`} state={stateForMissing(predictionMissing)} />
+              <StageCard step="03" title="라벨 생성" value={labeledCount} detail={`전체 영상 대비 누락 ${formatCount(labelMissing)}건`} state={stateForMissing(labelMissing)} />
+            </section>
+
+            <section className="admin-native-panel">
+              <div className="admin-native-panel-heading"><h2>운영 데이터 연결 상태</h2><span>React 실시간 영역</span></div>
+              <div className="admin-connection-list">
+                <div><span>마지막 데이터 수집 시각</span><strong>연결 대기</strong></div>
+                <div><span>마지막 예측 생성 시각</span><strong>연결 대기</strong></div>
+                <div><span>마지막 라벨 생성 시각</span><strong>연결 대기</strong></div>
+                <div><span>Azure 작업 오류</span><strong>연결 대기</strong></div>
+              </div>
+            </section>
+
+            <PowerBiPlaceholder title="파이프라인 상세 분석" />
+          </>
+        )}
+
+        {!loading && !error && overview && view === 'quality' && (
+          <>
+            <section className="admin-quality-summary">
+              <article><span>현재 모델 버전</span><strong className="admin-pending-value">연결 대기</strong></article>
+              <article><span>평균 절대 오차 · MAE</span><strong className="admin-pending-value">연결 대기</strong></article>
+              <article><span>RMSE</span><strong className="admin-pending-value">연결 대기</strong></article>
+              <article><span>평가 완료 영상</span><strong>{formatCount(labeledCount)}</strong></article>
+            </section>
+
+            <section className="admin-native-panel">
+              <div className="admin-native-panel-heading"><h2>모델 운영 상태</h2><span>React 실시간 영역</span></div>
+              <div className="admin-model-state">
+                <span>모델 버전과 예측 오차 API를 연결하면 현재 운영 모델, MAE, RMSE 및 품질 경고를 이 영역에 표시합니다.</span>
+              </div>
+            </section>
+
+            <PowerBiPlaceholder title="예측값과 실제값 분석" />
           </>
         )}
       </main>
