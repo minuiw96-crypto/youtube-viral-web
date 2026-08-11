@@ -35,10 +35,19 @@ export default function PredictionSemicircleGauge({ score }) {
           const outer = arcPoint(tick, 94)
           return <line key={tick} className="prediction-gauge-tick" x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y} />
         })}
-        <g className="prediction-gauge-needle" style={{ '--needle-angle': `${value * 1.8}deg` }}>
-          <line x1="110" y1="112" x2="47" y2="112" />
-          <circle cx="110" cy="112" r="7" />
-          <circle cx="110" cy="112" r="3" />
+        <g className="prediction-gauge-marker">
+          <polygon points="0,7 -5,-3 5,-3" />
+          <animateMotion
+            begin="1.35s"
+            dur="1.15s"
+            path="M 16 112 A 94 94 0 0 1 204 112"
+            keyPoints={`0;${value / 100}`}
+            keyTimes="0;1"
+            calcMode="spline"
+            keySplines=".2 .8 .2 1"
+            rotate="auto"
+            fill="freeze"
+          />
         </g>
       </svg>
       <div className="prediction-gauge-value">
