@@ -840,6 +840,13 @@ img {
   font-size: 14px;
   color: var(--text);
 }
+.rank-crown { display: block; width: 28px; height: 24px; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .16)); }
+.rank-crown.gold { color: #d5a51f; }
+.rank-crown.silver { color: #8c96a5; }
+.rank-crown.bronze { color: #b87346; }
+.rank-image-badge { width: 36px; height: 36px; object-fit: contain; }
+.rank-style-picker .rank-crown { width: 25px; height: 22px; }
+.rank-style-picker .rank-image-badge { width: 26px; height: 26px; }
 .rank-badge { --rank-color: var(--text-dim); position: relative; width: 34px; height: 34px; display: inline-grid; place-items: center; color: var(--rank-color); font-size: 13px; font-style: normal; }
 .rank-badge b { position: relative; z-index: 1; line-height: 1; }
 .rank-badge.gold { --rank-color: #d5a51f; }

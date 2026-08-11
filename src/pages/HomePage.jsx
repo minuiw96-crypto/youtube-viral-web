@@ -6,8 +6,15 @@ import { formatCategory } from '../utils/categoryLabels'
 import { formatSubscriberCount } from '../utils/numberFormat'
 
 const RANK_LABELS = ['gold', 'silver', 'bronze']
+const RANK_IMAGE_URLS = [
+  'https://res-static.noxinfluencer.com/kol20/2026/08/public/img/rank1.f0c1a4fb79352929b918f2921e8ba058.png',
+  'https://res-static.noxinfluencer.com/kol20/2026/08/public/img/rank2.5ebf5808f26db7ca00ca24c859109d81.png',
+  'https://res-static.noxinfluencer.com/kol20/2026/08/public/img/rank3.2c9a17ec5beede48a64a72b6c3b00e75.png',
+]
 const RANK_STYLES = [
+  { key: 'crown', label: '왕관' },
   { key: 'medal', label: '메달' },
+  { key: 'image', label: '랭크 이미지' },
   { key: 'chip', label: '번호 칩' },
   { key: 'flag', label: '리본' },
   { key: 'minimal', label: '미니멀' },
@@ -23,6 +30,23 @@ function getSubscriberCount(video) {
 
 function RankBadge({ index, style = 'medal' }) {
   if (index > 2) return <span className="rank-number">{index + 1}</span>
+  if (style === 'image') {
+    return (
+      <img
+        className="rank-image-badge"
+        src={RANK_IMAGE_URLS[index]}
+        alt={`${index + 1}위`}
+        referrerPolicy="no-referrer"
+      />
+    )
+  }
+  if (style === 'crown') {
+    return (
+      <svg className={`rank-crown ${RANK_LABELS[index]}`} viewBox="0 0 24 20" fill="currentColor" aria-label={`${index + 1}위`}>
+        <path d="M2 18 L1 7 L7 11 L12 3 L17 11 L23 7 L22 18 Z" />
+      </svg>
+    )
+  }
   return (
     <span className={`rank-badge rank-badge-${style} ${RANK_LABELS[index]}`} aria-label={`${index + 1}위`}>
       <i />
