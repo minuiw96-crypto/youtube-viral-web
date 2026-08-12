@@ -1,20 +1,8 @@
 import Sidebar from '../components/Sidebar'
 import DashboardHeader from '../components/DashboardHeader'
 
-const POWER_BI_PAGES = {
-  overview: {
-    title: '운영 개요',
-    url: import.meta.env.VITE_POWER_BI_ADMIN_OVERVIEW_URL,
-  },
-  pipeline: {
-    title: '데이터 파이프라인',
-    url: import.meta.env.VITE_POWER_BI_ADMIN_PIPELINE_URL,
-  },
-  quality: {
-    title: '모델 품질',
-    url: import.meta.env.VITE_POWER_BI_ADMIN_MODEL_QUALITY_URL,
-  },
-}
+const PAGE_TITLE = '관리자'
+const POWER_BI_URL = import.meta.env.VITE_POWER_BI_ADMIN_OVERVIEW_URL
 
 function getPowerBiEmbedUrl(url) {
   if (!url) return url
@@ -24,21 +12,20 @@ function getPowerBiEmbedUrl(url) {
   return embedUrl.toString()
 }
 
-export default function AdminPage({ view = 'overview' }) {
-  const page = POWER_BI_PAGES[view] || POWER_BI_PAGES.overview
-  const embedUrl = getPowerBiEmbedUrl(page.url)
+export default function AdminPage() {
+  const embedUrl = getPowerBiEmbedUrl(POWER_BI_URL)
 
   return (
     <div className="dashboard-shell">
       <Sidebar />
       <main className="dashboard-main dashboard-page admin-dashboard">
-        <DashboardHeader title={page.title} />
+        <DashboardHeader title={PAGE_TITLE} />
 
-        <section className="admin-powerbi-section" aria-label={`${page.title} Power BI 보고서`}>
+        <section className="admin-powerbi-section" aria-label={`${PAGE_TITLE} Power BI 보고서`}>
           {embedUrl ? (
             <iframe
               className="admin-powerbi-frame"
-              title={`${page.title} Power BI 보고서`}
+              title={`${PAGE_TITLE} Power BI 보고서`}
               src={embedUrl}
               allowFullScreen
             />

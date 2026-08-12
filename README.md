@@ -87,13 +87,7 @@
 
 ### 6. 관리자 대시보드
 
-관리자 계정에만 다음 Power BI 페이지를 노출합니다.
-
-- 운영 개요
-- 데이터 파이프라인
-- 모델 품질
-
-Power BI 보고서는 웹 애플리케이션 내부 `iframe`에 삽입되며, 각 페이지의 URL은 빌드 환경 변수로 분리합니다.
+관리자 계정에만 통합 Power BI 관리자 페이지를 노출합니다. 보고서는 웹 애플리케이션 내부 `iframe`에 삽입됩니다.
 
 ### 7. 계정 및 화면 설정
 
@@ -198,9 +192,7 @@ flowchart LR
 | `/predict` | 로그인 | URL 기반 바이럴 스코어 예측 |
 | `/lab/video-insights` | 로그인 | 영상별 조회수·참여율 인사이트 |
 | `/settings` | 로그인 | 계정·연결 채널·테마 관리 |
-| `/admin` | 관리자 | Power BI 운영 개요 |
-| `/admin/pipeline` | 관리자 | Power BI 데이터 파이프라인 |
-| `/admin/model-quality` | 관리자 | Power BI 모델 품질 |
+| `/admin` | 관리자 | 통합 Power BI 관리자 대시보드 |
 
 ## API
 
@@ -319,9 +311,7 @@ func start
 
 | 변수 | 설명 |
 | --- | --- |
-| `VITE_POWER_BI_ADMIN_OVERVIEW_URL` | 운영 개요 보고서 URL |
-| `VITE_POWER_BI_ADMIN_PIPELINE_URL` | 데이터 파이프라인 보고서 URL |
-| `VITE_POWER_BI_ADMIN_MODEL_QUALITY_URL` | 모델 품질 보고서 URL |
+| `VITE_POWER_BI_ADMIN_OVERVIEW_URL` | 통합 관리자 보고서 URL |
 
 `VITE_` 변수는 클라이언트 번들에 포함되므로 비밀키를 저장하면 안 됩니다.
 
