@@ -105,11 +105,8 @@ export default function LandingPage() {
         <img src={heroBg} alt="" className="hero-bg" />
         <div className="hero-overlay" />
         <div className="container hero-content">
-          <h1 className="hero-title">영상이 뜨기 전에 확인하세요</h1>
-          <p className="hero-subtitle">
-            AI 기반 바이럴 스코어와 채널 분석으로 유튜브 크리에이터의 다음 성장을 예측하는
-            인플루언서 마케팅 통합 솔루션입니다.
-          </p>
+          <h1 className="hero-title">감이 아닌 데이터로</h1>
+          <p className="hero-subtitle">채널과 영상 분석을 통한 가능성을 확인하세요</p>
           <div className="hero-actions">
             <Link to="/register" className="btn btn-primary">무료로 시작하기</Link>
             <a href="#features" className="btn btn-outline">기능 살펴보기</a>
