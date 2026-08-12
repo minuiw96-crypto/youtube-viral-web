@@ -1,0 +1,8 @@
+.venv/
+.python_packages/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+local.settings.json
+.env.local
