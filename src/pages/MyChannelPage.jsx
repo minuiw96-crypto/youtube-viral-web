@@ -5,6 +5,7 @@ import ScoreGauge from '../components/ScoreGauge'
 import { getChannelSummary, getChannelVideos, getVideoRanking } from '../api/client'
 import { formatCategory } from '../utils/categoryLabels'
 import { formatSubscriberCount } from '../utils/numberFormat'
+import { useActiveVideo } from '../context/ActiveVideoContext'
 
 const TIERS = [
   { key: 'tier1', label: '1천~1만', min: 1000, max: 9999 },
@@ -61,6 +62,7 @@ export default function MyChannelPage({ view = 'benchmark' }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const benchmarkTrackRef = useRef(null)
+  const { setActiveVideoId } = useActiveVideo()
 
   useEffect(() => {
     let active = true
@@ -156,6 +158,14 @@ export default function MyChannelPage({ view = 'benchmark' }) {
     .sort((a, b) => (number(b.view_count) ?? 0) - (number(a.view_count) ?? 0))
     .slice(0, 20), [videos])
   const selectedVideo = performanceVideos.find((video) => (video.video_id || video.id) === selectedVideoId) || performanceVideos[0]
+
+  // Let the chat widget resolve "이 영상" to whatever's shown in this report,
+  // and stop claiming a video once the user leaves the performance view.
+  useEffect(() => {
+    if (view !== 'performance') return undefined
+    setActiveVideoId(selectedVideo?.video_id || selectedVideo?.id || null)
+    return () => setActiveVideoId(null)
+  }, [view, selectedVideo, setActiveVideoId])
 
   const chartPoints = useMemo(() => {
     if (!performanceVideos.length) return []

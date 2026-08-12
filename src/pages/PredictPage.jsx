@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import DashboardHeader from '../components/DashboardHeader'
 import PredictionSemicircleGauge from '../components/PredictionSemicircleGauge'
 import { getVideoMetadata, predictFromUrl } from '../api/client'
+import { useActiveVideo } from '../context/ActiveVideoContext'
 import predictVideoIcon from '../assets/predict-video-icon.png'
 
 const PREDICTION_CATEGORIES = [
@@ -86,12 +87,19 @@ export default function PredictPage() {
   const [url, setUrl] = useState('')
   const [category, setCategory] = useState(PREDICTION_CATEGORIES[0].value)
   const [result, setResult] = useState(null)
+  const [resultVideoId, setResultVideoId] = useState('')
   const [videoTitle, setVideoTitle] = useState('')
   const [videoThumbnail, setVideoThumbnail] = useState('')
   const [fallbackThumbnail, setFallbackThumbnail] = useState('')
   const [thumbnailFailed, setThumbnailFailed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const { setActiveVideoId } = useActiveVideo()
+
+  // Let the chat widget resolve "이 영상" to whatever prediction is on screen.
+  useEffect(() => {
+    setActiveVideoId(resultVideoId || null)
+  }, [resultVideoId, setActiveVideoId])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -118,6 +126,7 @@ export default function PredictPage() {
       setVideoThumbnail(databaseThumbnail || thumbnailFromResult(prediction) || directThumbnail)
       setFallbackThumbnail(directThumbnail)
       setResult(prediction)
+      setResultVideoId(valueOf(prediction, 'video_id') || videoId || '')
     }
     catch (err) { setError(err.message || '예측에 실패했습니다.') }
     finally { setLoading(false) }
@@ -189,7 +198,7 @@ export default function PredictPage() {
                   </div>
                 </div>
                 <PredictionSemicircleGauge score={validScore} />
-                <button type="button" className="analyze-again" onClick={() => { setResult(null); setVideoTitle(''); setVideoThumbnail(''); setFallbackThumbnail(''); setThumbnailFailed(false); setUrl(''); setError('') }}>다른 영상 분석하기</button>
+                <button type="button" className="analyze-again" onClick={() => { setResult(null); setResultVideoId(''); setVideoTitle(''); setVideoThumbnail(''); setFallbackThumbnail(''); setThumbnailFailed(false); setUrl(''); setError('') }}>다른 영상 분석하기</button>
               </div>
             )}
           </div>

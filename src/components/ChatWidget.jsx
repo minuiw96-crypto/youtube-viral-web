@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { askQuestion, getAccessToken } from '../api/client'
+import { useActiveVideo } from '../context/ActiveVideoContext'
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false)
@@ -10,12 +11,19 @@ export default function ChatWidget() {
   const [contextVideoId, setContextVideoId] = useState(undefined)
   const messagesRef = useRef(null)
   const isLoggedIn = Boolean(getAccessToken())
+  const { activeVideoId } = useActiveVideo()
 
   useEffect(() => {
     if (messagesRef.current) {
       messagesRef.current.scrollTop = messagesRef.current.scrollHeight
     }
   }, [messages, open])
+
+  // The page the user is currently on (predict result, channel report video
+  // detail, ...) takes priority so "이 영상" resolves to what's on screen.
+  useEffect(() => {
+    if (activeVideoId) setContextVideoId(activeVideoId)
+  }, [activeVideoId])
 
   async function handleSend(e) {
     e.preventDefault()
@@ -27,7 +35,9 @@ export default function ChatWidget() {
     setLoading(true)
     try {
       const data = await askQuestion({ question, contextVideoId })
-      setContextVideoId(data.selected_video_id)
+      // A channel-level answer returns no selected_video_id; keep whatever
+      // video context we already had instead of clearing it.
+      if (data.selected_video_id) setContextVideoId(data.selected_video_id)
       setMessages((m) => [...m, { role: 'assistant', text: data.answer }])
     } catch (err) {
       setMessages((m) => [...m, { role: 'assistant', text: err.message || '답변을 가져오지 못했습니다.' }])
