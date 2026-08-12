@@ -50,7 +50,7 @@ class EmbeddingSearchTests(unittest.TestCase):
         documents = seed_documents()
         self.assertGreaterEqual(len(documents), 20)
         self.assertTrue(all(row["channel_id"] == "GLOBAL" for row in documents))
-        self.assertTrue(all(row["knowledge_version"] == "2.3.0" for row in documents))
+        self.assertTrue(all(row["knowledge_version"] == "2.4.0" for row in documents))
         shap = next(row for row in documents if row["id"] == "concept-shap")
         text = embedding_text(shap)
         self.assertIn("SHAP", text)

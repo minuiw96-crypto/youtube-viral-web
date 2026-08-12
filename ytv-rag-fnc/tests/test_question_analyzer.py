@@ -244,6 +244,11 @@ class QuestionAnalyzerTests(unittest.TestCase):
         result = lexical_question_analysis("이 영상 분석하는데 얼마나 걸려요?")
         self.assertNotEqual(result["primary_category"], "glossary_model")
 
+    def test_data_protection_question_is_glossary(self):
+        result = lexical_question_analysis("제 채널과 영상 데이터는 어떻게 저장되고 보호되나요?")
+        self.assertEqual(result["primary_category"], "glossary_model")
+        self.assertFalse(result["needs_clarification"])
+
     def test_clarification_question_scrubs_internal_field_names(self):
         result = normalize_question_analysis(
             {

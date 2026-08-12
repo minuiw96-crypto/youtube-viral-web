@@ -179,6 +179,15 @@ def _deterministic_primary_category(question: str) -> str | None:
     ) and any(marker in compact for marker in ("뭐야", "무엇", "뭔가요", "설명")):
         return "glossary_model"
 
+    # "제 채널과 영상 데이터는 어떻게 저장되고 보호되나요?" asks about the product's
+    # data-handling policy, not the channel's own operational data — previously
+    # fell into a data category and echoed raw container names in the answer.
+    if any(
+        term in compact
+        for term in ("데이터보호", "개인정보", "데이터는어떻게저장", "어떻게저장", "보호되나요", "안전한가요")
+    ):
+        return "glossary_model"
+
     video_list_patterns = (
         "영상목록",
         "영상리스트",
