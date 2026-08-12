@@ -1698,6 +1698,7 @@ img {
 .predict-form-new { width: min(100%, 720px); }
 .predict-form-heading { display: flex; align-items: center; gap: 18px; margin-bottom: 50px; }
 .predict-form-heading img { width: 72px; height: 72px; object-fit: contain; flex: 0 0 auto; }
+.predict-form-heading > div { min-width: 0; }
 .predict-form-heading h2 { font-size: clamp(22px, 3vw, 28px); letter-spacing: -.035em; }
 .predict-form-new label { display: block; margin-bottom: 14px; font-size: 15px; font-weight: 800; }
 .predict-category-field { width: min(100%, 260px); margin-bottom: 42px; }
@@ -1713,7 +1714,7 @@ img {
 .predict-error { margin-top: 9px; font-size: 11px; }
 .input-note { color: var(--text-dim); }
 .predict-error { color: var(--accent); }
-.prediction-disclaimer { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 11px; line-height: 1.6; }
+.prediction-disclaimer { margin-top: 9px; color: color-mix(in srgb, var(--text) 72%, var(--text-dim)); font-size: 12px; font-weight: 600; line-height: 1.55; }
 .predict-empty-visual { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; min-height: 320px; color: var(--text-dim); font-size: 12px; }
 .signal-orbit { position: relative; width: 170px; height: 170px; }
 .orbit-ring { position: absolute; display: block; border: 1px solid var(--border); border-radius: 50%; }
