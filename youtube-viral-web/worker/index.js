@@ -5,7 +5,7 @@ export default {
     if (url.pathname === '/api/config') {
       return Response.json({
         powerbi: {
-          admin: env.POWERBI_ADMIN_URL || null,
+          admin: env.VITE_POWER_BI_ADMIN_OVERVIEW_URL || env.POWERBI_ADMIN_URL || null,
           home: env.POWERBI_HOME_URL || null,
           user: env.POWERBI_USER_URL || null,
         },

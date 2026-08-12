@@ -306,6 +306,7 @@ func start
 | `PREDICT_FUNCTION_BASE_URL` | Variable | `ytv-func` URL 예측 API 주소 |
 | `AZURE_FUNCTION_KEY` | Secret | RAG Function Key |
 | `PREDICT_FUNCTION_KEY` | Secret | 예측 Function Key |
+| `VITE_POWER_BI_ADMIN_OVERVIEW_URL` | Variable | 통합 관리자 보고서 URL. 직접 Wrangler 배포에서도 사용 |
 
 ### 프론트엔드 빌드
 

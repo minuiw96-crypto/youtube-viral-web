@@ -1,8 +1,9 @@
+import { useEffect, useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import DashboardHeader from '../components/DashboardHeader'
 
 const PAGE_TITLE = '관리자'
-const POWER_BI_URL = import.meta.env.VITE_POWER_BI_ADMIN_OVERVIEW_URL
+const BUILD_TIME_POWER_BI_URL = import.meta.env.VITE_POWER_BI_ADMIN_OVERVIEW_URL
 
 function getPowerBiEmbedUrl(url) {
   if (!url) return url
@@ -13,7 +14,18 @@ function getPowerBiEmbedUrl(url) {
 }
 
 export default function AdminPage() {
-  const embedUrl = getPowerBiEmbedUrl(POWER_BI_URL)
+  const [powerBiUrl, setPowerBiUrl] = useState(BUILD_TIME_POWER_BI_URL || '')
+
+  useEffect(() => {
+    if (BUILD_TIME_POWER_BI_URL) return
+
+    fetch('/api/config')
+      .then((response) => response.ok ? response.json() : null)
+      .then((config) => setPowerBiUrl(config?.powerbi?.admin || ''))
+      .catch(() => setPowerBiUrl(''))
+  }, [])
+
+  const embedUrl = getPowerBiEmbedUrl(powerBiUrl)
 
   return (
     <div className="dashboard-shell">
