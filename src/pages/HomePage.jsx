@@ -92,6 +92,7 @@ export default function HomePage() {
           <>
             <div className="rank-page-heading">
               <h1>영상 랭킹</h1>
+              <p>최근 7일 기준 바이럴 스코어 순위</p>
             </div>
             <div className="rank-search-bar">
               <div className="rank-search-input">

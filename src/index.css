@@ -676,6 +676,13 @@ img {
   line-height: 1.12;
   letter-spacing: -.04em;
 }
+.rank-page-heading p {
+  margin-top: 9px;
+  color: color-mix(in srgb, var(--text) 70%, var(--text-dim));
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.5;
+}
 .rank-search-input {
   flex: 1;
   display: flex;
