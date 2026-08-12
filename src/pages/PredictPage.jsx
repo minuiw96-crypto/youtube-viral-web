@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import DashboardHeader from '../components/DashboardHeader'
 import PredictionSemicircleGauge from '../components/PredictionSemicircleGauge'
-import { predictFromUrl } from '../api/client'
+import { getVideoMetadata, predictFromUrl } from '../api/client'
 import predictVideoIcon from '../assets/predict-video-icon.png'
 
 const PREDICTION_CATEGORIES = [
@@ -27,6 +27,27 @@ function thumbnailFromResult(result) {
     || valueOf(result?.video, 'thumbnail_url', 'video_thumbnail_url')
     || valueOf(result?.video_data, 'thumbnail_url', 'video_thumbnail_url')
     || valueOf(result?.metadata, 'thumbnail_url', 'video_thumbnail_url')
+}
+
+function videoIdFromUrl(value) {
+  try {
+    const parsed = new URL(value)
+    const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '')
+    if (hostname === 'youtu.be') return parsed.pathname.split('/').filter(Boolean)[0] || ''
+    if (hostname === 'youtube.com' || hostname.endsWith('.youtube.com')) {
+      if (parsed.pathname === '/watch') return parsed.searchParams.get('v') || ''
+      const [route, videoId] = parsed.pathname.split('/').filter(Boolean)
+      if (['shorts', 'embed', 'live'].includes(route)) return videoId || ''
+    }
+  }
+  catch {
+    return ''
+  }
+  return ''
+}
+
+function directThumbnailUrl(videoId) {
+  return videoId ? `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/hqdefault.jpg` : ''
 }
 
 async function fetchYouTubeMetadata(videoUrl) {
@@ -67,6 +88,8 @@ export default function PredictPage() {
   const [result, setResult] = useState(null)
   const [videoTitle, setVideoTitle] = useState('')
   const [videoThumbnail, setVideoThumbnail] = useState('')
+  const [fallbackThumbnail, setFallbackThumbnail] = useState('')
+  const [thumbnailFailed, setThumbnailFailed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -77,13 +100,23 @@ export default function PredictPage() {
     setError('')
     setVideoTitle('')
     setVideoThumbnail('')
+    setFallbackThumbnail('')
+    setThumbnailFailed(false)
     try {
       const videoUrl = url.trim()
-      const metadataPromise = fetchYouTubeMetadata(videoUrl)
-      const prediction = await predictFromUrl(videoUrl, category)
-      const metadata = await metadataPromise
-      setVideoTitle(titleFromResult(prediction) || metadata?.title || '')
-      setVideoThumbnail(thumbnailFromResult(prediction) || metadata?.thumbnailUrl || '')
+      const videoId = videoIdFromUrl(videoUrl)
+      const [prediction, databaseMetadata] = await Promise.all([
+        predictFromUrl(videoUrl, category),
+        videoId ? getVideoMetadata(videoId).catch(() => null) : Promise.resolve(null),
+      ])
+      const databaseTitle = databaseMetadata?.found ? databaseMetadata.title : ''
+      const databaseThumbnail = databaseMetadata?.found ? databaseMetadata.thumbnail_url : ''
+      const needsYouTubeTitle = !databaseTitle && !titleFromResult(prediction)
+      const metadata = needsYouTubeTitle ? await fetchYouTubeMetadata(videoUrl) : null
+      const directThumbnail = directThumbnailUrl(videoId)
+      setVideoTitle(databaseTitle || titleFromResult(prediction) || metadata?.title || '')
+      setVideoThumbnail(databaseThumbnail || thumbnailFromResult(prediction) || directThumbnail)
+      setFallbackThumbnail(directThumbnail)
       setResult(prediction)
     }
     catch (err) { setError(err.message || '예측에 실패했습니다.') }
@@ -136,14 +169,27 @@ export default function PredictPage() {
               <div className="prediction-result-new">
                 <span className="prediction-complete-status">분석 완료</span>
                 <div className="prediction-result-summary">
-                  {resultThumbnail ? <img src={resultThumbnail} alt="" className="prediction-result-thumbnail" /> : <div className="prediction-result-thumbnail thumbnail-fallback">영상 썸네일</div>}
+                  {resultThumbnail && !thumbnailFailed ? (
+                    <img
+                      src={resultThumbnail}
+                      alt=""
+                      className="prediction-result-thumbnail"
+                      onError={(event) => {
+                        if (fallbackThumbnail && event.currentTarget.src !== fallbackThumbnail) {
+                          event.currentTarget.src = fallbackThumbnail
+                          return
+                        }
+                        setThumbnailFailed(true)
+                      }}
+                    />
+                  ) : <div className="prediction-result-thumbnail thumbnail-fallback">영상 썸네일</div>}
                   <div className="prediction-result-heading">
                     <h2>{resultTitle}</h2>
                     <p className="prediction-category-chip">{categoryLabel}</p>
                   </div>
                 </div>
                 <PredictionSemicircleGauge score={validScore} />
-                <button type="button" className="analyze-again" onClick={() => { setResult(null); setVideoTitle(''); setVideoThumbnail(''); setUrl(''); setError('') }}>다른 영상 분석하기</button>
+                <button type="button" className="analyze-again" onClick={() => { setResult(null); setVideoTitle(''); setVideoThumbnail(''); setFallbackThumbnail(''); setThumbnailFailed(false); setUrl(''); setError('') }}>다른 영상 분석하기</button>
               </div>
             )}
           </div>

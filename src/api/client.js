@@ -90,6 +90,10 @@ export function getChannelVideos(channelId) {
   return apiRequest(`/api/channel/videos${query}`)
 }
 
+export function getVideoMetadata(videoId) {
+  return apiRequest(`/api/video/metadata?video_id=${encodeURIComponent(videoId)}`)
+}
+
 export function getVideoRanking() {
   return getAdminOverview()
 }
