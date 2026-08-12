@@ -1,19 +1,3 @@
-<p align="center">
-  <img src="youtube-viral-web/src/assets/logo.png" alt="유바씨 로고" width="420" />
-</p>
-
-<h1 align="center">유바씨 — YouTube Viral Signal</h1>
-
-<p align="center">
-  감이 아닌 데이터로 채널과 영상의 가능성을 확인하는<br />
-  YouTube 바이럴 분석·예측 및 크리에이터 인사이트 서비스
-</p>
-
-<p align="center">
-  <a href="https://youtube-viral-web.heyyouman86.workers.dev">서비스 바로가기</a>
-</p>
-
----
 
 ## 프로젝트 소개
 
