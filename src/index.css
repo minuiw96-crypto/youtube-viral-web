@@ -179,8 +179,11 @@ img {
   gap: 24px;
 }
 .nav-logo {
-  height: 62px;
-  width: auto;
+  display: block;
+  width: min(190px, 38vw);
+  height: auto;
+  max-height: 64px;
+  object-fit: contain;
 }
 .nav-links {
   display: flex;
@@ -1407,7 +1410,9 @@ img {
     height: 56px;
   }
   .nav-logo {
-    height: 46px;
+    width: min(150px, 42vw);
+    height: auto;
+    max-height: 50px;
   }
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1455,13 +1460,13 @@ img {
   z-index: 20;
 }
 .sidebar.collapsed { width: 80px; }
-.sidebar-top { min-height: 46px; }
+.sidebar-top { min-height: 60px; }
 .sidebar-logo {
-  height: 46px;
-  max-width: 168px;
+  display: block;
+  width: min(176px, 100%);
+  height: auto;
+  max-height: 60px;
   object-fit: contain;
-  transform: scale(1.65);
-  transform-origin: left center;
 }
 .sidebar-collapse-btn {
   width: 30px;
@@ -1692,7 +1697,7 @@ img {
 .predict-entry-layout { min-height: 470px; display: flex; align-items: flex-start; justify-content: center; }
 .predict-form-new { width: min(100%, 720px); }
 .predict-form-heading { display: flex; align-items: center; gap: 18px; margin-bottom: 50px; }
-.predict-form-heading img { width: 84px; height: 58px; object-fit: contain; flex: 0 0 auto; }
+.predict-form-heading img { width: 72px; height: 72px; object-fit: contain; flex: 0 0 auto; }
 .predict-form-heading h2 { font-size: clamp(22px, 3vw, 28px); letter-spacing: -.035em; }
 .predict-form-new label { display: block; margin-bottom: 14px; font-size: 15px; font-weight: 800; }
 .predict-category-field { width: min(100%, 260px); margin-bottom: 42px; }
