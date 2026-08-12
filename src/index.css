@@ -1713,6 +1713,7 @@ img {
 .predict-error { margin-top: 9px; font-size: 11px; }
 .input-note { color: var(--text-dim); }
 .predict-error { color: var(--accent); }
+.prediction-disclaimer { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 11px; line-height: 1.6; }
 .predict-empty-visual { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; min-height: 320px; color: var(--text-dim); font-size: 12px; }
 .signal-orbit { position: relative; width: 170px; height: 170px; }
 .orbit-ring { position: absolute; display: block; border: 1px solid var(--border); border-radius: 50%; }

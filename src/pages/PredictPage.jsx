@@ -168,6 +168,9 @@ export default function PredictPage() {
                   </div>
                   {error && <p className="predict-error">{error}</p>}
                   <p className="input-note">공개 상태인 YouTube 영상 주소를 입력해 주세요.</p>
+                  <p className="prediction-disclaimer">
+                    바이럴 스코어는 데이터 기반 참고 지표로, 실제 조회수나 성과와 차이가 있을 수 있습니다.
+                  </p>
                 </form>
               </div>
             )}
